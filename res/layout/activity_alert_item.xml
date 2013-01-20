@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="10dip" >
+    <LinearLayout
+        android:id="@+id/item_menu"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#FFFFFFFF"
+        >
+        <TextView android:id="@+id/item_clock"
+            android:text="@string/item_menu_clock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:textSize="15sp"/>
+        <TextView android:id="@+id/item_share"
+            android:text="@string/item_menu_share"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:textSize="15sp"/>
+        <TextView android:id="@+id/item_color"
+            android:text="@string/item_menu_color"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:textSize="15sp"
+            android:textColor="#8B008B"/>
+    </LinearLayout>
+    
+	<LinearLayout
+        android:id="@+id/item_color_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:orientation="horizontal"
+        android:background="#FFFFFFFF"
+        >
+        <TextView android:id="@+id/color_1"
+            android:text=" "
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:textSize="15sp"
+            android:layout_weight="1.0"
+            android:layout_gravity="center"/>
+        <TextView android:id="@+id/color_2"
+            android:text=" "
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:textSize="15sp"
+            android:layout_weight="1.0"
+            android:layout_gravity="center"/>
+        <TextView android:id="@+id/color_3"
+            android:text=" "
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:textSize="15sp"
+            android:layout_weight="1.0"
+            android:layout_gravity="center"/>
+        <TextView android:id="@+id/color_4"
+            android:text=" "
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:textSize="15sp"
+            android:layout_weight="1.0"
+            android:layout_gravity="center"/>
+        <TextView android:id="@+id/color_ok"
+            android:text="@string/color_ok"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="5dip"
+            android:textSize="15sp"
+            android:layout_weight="1"
+            android:gravity="center"/>
+    </LinearLayout>
+    <RelativeLayout 
+        android:id="@+id/alert_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        
+        <TextView android:id="@+id/tv_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17.0sp"
+            android:padding="12dip" 
+	        android:background="@null" 
+            android:maxLines="3"
+        />
+        <EditText android:id="@+id/ed_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:padding="12dip"
+            android:maxLines="3"
+        	android:visibility="gone" 
+	        android:background="@null" 
+	        android:scrollHorizontally="false"
+            android:inputType="textMultiLine" 
+	        android:imeOptions="actionDone"/>
+        
+    </RelativeLayout>
+    
+</LinearLayout>

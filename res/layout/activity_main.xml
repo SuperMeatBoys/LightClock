@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    tools:context=".MainActivity" 
+    android:background="@drawable/bg_repeat"
+    android:orientation="vertical"
+    android:paddingLeft="9dip"
+    android:paddingRight="9dip"
+    android:paddingTop="2dip">
+
+    <com.gesuper.lightclock.view.AlertListView 
+        android:id="@+id/alert_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="10"  
+        android:background="@null"
+        android:layout_gravity="top"/>
+    
+	<Button
+        android:id="@+id/new_alert"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="@string/new_alert" />
+</LinearLayout>
