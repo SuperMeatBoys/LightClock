@@ -1,19 +1,14 @@
 package com.gesuper.lightclock.view;
 
-import java.util.Date;
 import java.util.ArrayList;
-import java.util.Random;
-
 import com.gesuper.lightclock.R;
 import com.gesuper.lightclock.activity.MainActivity;
 import com.gesuper.lightclock.model.AlertItemModel;
 import com.gesuper.lightclock.model.AlertListAdapter;
-import com.gesuper.lightclock.model.BgColor;
 import com.gesuper.lightclock.model.DBHelperModel;
 import com.gesuper.lightclock.view.AlertItemView.PopupListener;
 import com.gesuper.lightclock.view.AlertItemView.ResizeListener;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Rect;
@@ -188,8 +183,6 @@ public class MainView  extends LinearLayout {
 		Log.d(TAG, "set adapter");
 		this.mListView.setAdapter(this.mAdapter);
 		
-		
-		
 		this.mNewButton = (Button)findViewById(R.id.new_alert);
 		this.mNewButton.setOnClickListener(new OnClickListener(){
 			@Override
@@ -202,21 +195,6 @@ public class MainView  extends LinearLayout {
 		
 	}
 
-	private ContentValues createNewItem(){
-		Random rand = new Random();
-		ContentValues values = new ContentValues();
-		values.put(AlertItemModel.ID, -1);
-		values.put(AlertItemModel.ALERT_TYPE, 0);
-		values.put(AlertItemModel.BG_COLOR_ID, rand.nextInt(BgColor.COLOR_COUNT) + 1);
-		values.put(AlertItemModel.ALERT_DATE, 0);
-		values.put(AlertItemModel.CREATE_DATE, new Date().getTime());
-		values.put(AlertItemModel.MODIFY_DATE, new Date().getTime());
-		values.put(AlertItemModel.CONTENT, "");
-		values.put(AlertItemModel.VERSION, AlertItemModel.APP_VERSION);
-		values.put(AlertItemModel.SEQUENCE, 0);
-		return values;
-	}
-
 	public void beforeAddItem() {
 		// TODO Auto-generated method stub
 		if(this.mListView.getFirstVisiblePosition() > 0 ){
@@ -225,16 +203,10 @@ public class MainView  extends LinearLayout {
 	}
 	
 	public boolean addNewItem(){
-		ContentValues values = createNewItem();
 		Log.d(TAG, "new items created !");
-		//DBHelperModel dbHelper = new DBHelperModel(this.mContext);
-		//long newId = dbHelper.insert(values);
-		//if(newId < 0){
-		//	return false;
-		//}
-		
+
 		this.createHandler.sendEmptyMessageDelayed(0, 300);
-		AlertItemModel mItemModel = new AlertItemModel(values);
+		AlertItemModel mItemModel = new AlertItemModel();
 		this.mAdapter.insert(mItemModel, 0);
 		this.requestFocus();
 		return true;

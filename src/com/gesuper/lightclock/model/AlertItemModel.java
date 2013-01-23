@@ -1,5 +1,8 @@
 package com.gesuper.lightclock.model;
 
+import java.util.Date;
+import java.util.Random;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 
@@ -13,6 +16,7 @@ public class AlertItemModel {
 	public static final String ALERT_DATE = "alert_date";
 	public static final String CREATE_DATE = "create_date";
 	public static final String MODIFY_DATE = "modify_date";
+	public static final String SHORT_CONTENT = "short_content";
 	public static final String CONTENT = "content";
 	public static final String VERSION = "version";
 	public static final String SEQUENCE = "sequence";
@@ -24,6 +28,7 @@ public class AlertItemModel {
 		AlertItemModel.ALERT_DATE,
 		AlertItemModel.CREATE_DATE,
 		AlertItemModel.MODIFY_DATE,
+		AlertItemModel.SHORT_CONTENT,
 		AlertItemModel.CONTENT,
 		AlertItemModel.VERSION,
 		AlertItemModel.SEQUENCE
@@ -37,9 +42,10 @@ public class AlertItemModel {
 	private static final int ALERT_DATE_COLUMN = 3;
 	private static final int CREATE_DATE_COLUMN = 4;
 	private static final int MODIFY_DATE_COLUMN = 5;
-	private static final int CONTENT_COLUMN = 6;
-	private static final int VERSION_COLUMN = 7;
-	private static final int SEQUENCE_COLUMN = 8;
+	private static final int SHORT_CONTENT_COLUMN = 6;
+	private static final int CONTENT_COLUMN = 7;
+	private static final int VERSION_COLUMN = 8;
+	private static final int SEQUENCE_COLUMN = 9;
 	
 	private String mId;
 	private String mAlertType;
@@ -52,6 +58,20 @@ public class AlertItemModel {
 	private String mVersion;
 	private String mSequence;
 	
+	public AlertItemModel(){
+		Random rand = new Random();
+		this.mId = "-1";
+		this.mAlertType = "0";
+		this.mBgColorId = String.valueOf(rand.nextInt(BgColor.COLOR_COUNT) + 1);
+		this.mAlertDate =  "0";
+		this.mCreateDate  = String.valueOf(new Date().getTime());
+		this.mModifyDate = String.valueOf(new Date().getTime());
+		this.mShortContent  = "";
+		this.mContent =  "";
+		this.mVersion =  String.valueOf(AlertItemModel.APP_VERSION);
+		this.mSequence = "0";
+	}
+	
 	public AlertItemModel(Cursor cursor){
 		this.mId = cursor.getString(ID_COLUMN);
 		this.mAlertType = cursor.getString(ALERT_TYPE_COLUMN);
@@ -59,8 +79,10 @@ public class AlertItemModel {
 		this.mAlertDate = cursor.getString(ALERT_DATE_COLUMN);
 		this.mCreateDate = cursor.getString(CREATE_DATE_COLUMN);
 		this.mModifyDate = cursor.getString(MODIFY_DATE_COLUMN);
+		
+		this.mShortContent = cursor.getString(SHORT_CONTENT_COLUMN);
 		this.mContent = cursor.getString(CONTENT_COLUMN);
-		this.mShortContent = this.mContent;
+		
 		this.mVersion = cursor.getString(VERSION_COLUMN);
 		this.mSequence = cursor.getString(SEQUENCE_COLUMN);
 	}
@@ -72,6 +94,7 @@ public class AlertItemModel {
 		this.mAlertDate = values.getAsString(ALERT_DATE);
 		this.mCreateDate = values.getAsString(CREATE_DATE);
 		this.mModifyDate = values.getAsString(MODIFY_DATE);
+		this.mShortContent = values.getAsString(SHORT_CONTENT);
 		this.mContent = values.getAsString(CONTENT);
 		this.mVersion = values.getAsString(VERSION);
 		this.mSequence = values.getAsString(SEQUENCE);
@@ -79,7 +102,7 @@ public class AlertItemModel {
 	
 	public AlertItemModel(long id, int alertType,int bgColorId, 
 			long alertDate, long createDate,
-			long modifyDate, String content, 
+			long modifyDate, String shortContent, String content, 
 			int  version, int sequence){
 		this.mId = String.valueOf(id);
 		
@@ -88,6 +111,7 @@ public class AlertItemModel {
 		this.mAlertDate = String.valueOf(alertDate);
 		this.mCreateDate = String.valueOf(createDate);
 		this.mModifyDate = String.valueOf(modifyDate);
+		this.mShortContent = shortContent;
 		this.mContent = content;
 		this.mVersion = String.valueOf(version);
 		this.mSequence = String.valueOf(sequence);
@@ -100,6 +124,7 @@ public class AlertItemModel {
 		values.put(ALERT_DATE, this.mAlertDate);
 		values.put(CREATE_DATE, this.mCreateDate);
 		values.put(MODIFY_DATE, this.mModifyDate);
+		values.put(SHORT_CONTENT, this.mShortContent);
 		values.put(CONTENT, this.mContent);
 		values.put(VERSION, this.mVersion);
 		values.put(SEQUENCE, this.mSequence);
@@ -139,9 +164,22 @@ public class AlertItemModel {
 		return Long.valueOf(this.mModifyDate);
 	}
 	
-	public CharSequence getShortContent() {
+	public String getShortContent() {
 		// TODO Auto-generated method stub
-		return this.mContent;
+		return this.mShortContent;
+	}
+	
+	public String getShortContentForTextView(){
+
+		if(this.mShortContent.length() == 0)
+			return this.mContent;
+		int len = this.mShortContent.length();
+		String content = this.mShortContent.substring(0, len-3);
+		return content + "......";
+	}
+	
+	public void setShortContent(String shortContent){
+		this.mShortContent = shortContent;
 	}
 	
 	public void setContent(String content){

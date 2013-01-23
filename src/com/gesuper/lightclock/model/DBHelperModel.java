@@ -26,6 +26,7 @@ public class DBHelperModel extends SQLiteOpenHelper{
 					AlertItemModel.ALERT_DATE + " INTEGER NOT NULL DEFAULT 0," +
 					AlertItemModel.CREATE_DATE + " INTEGER NOT NULL DEFAULT 0," +
 					AlertItemModel.MODIFY_DATE + " INTEGER NOT NULL DEFAULT 0," +
+					AlertItemModel.SHORT_CONTENT + " TEXT　 DEFAULT ''," +
 					AlertItemModel.CONTENT + " TEXT　NOT NULL DEFAULT ''," +
 					AlertItemModel.VERSION + " INTEGER NOT NULL DEFAULT 0," +
 					AlertItemModel.SEQUENCE + " INTEGER NOT NULL DEFAULT 0" +

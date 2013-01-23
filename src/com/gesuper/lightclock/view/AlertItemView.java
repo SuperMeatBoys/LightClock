@@ -246,7 +246,7 @@ public class AlertItemView extends LinearLayout {
 
 		this.mItemModel = itemModel;
 		this.mEditText.setText(this.mItemModel.getContent());
-		this.mTextView.setText(this.mItemModel.getShortContent());
+		this.mTextView.setText(this.mItemModel.getShortContentForTextView());
 		
 		this.changeBgColor(this.mItemModel.getBgColorId());
 		
