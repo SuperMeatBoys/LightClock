@@ -122,7 +122,7 @@ public class AlertItemView extends LinearLayout {
 		this.status = STATUS_NORMAL;
 		
 		this.mEditText.addTextChangedListener(new TextWatcher(){
-			private String lastStr;
+			private String shortStr;
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count,
 					int after) {
@@ -140,16 +140,16 @@ public class AlertItemView extends LinearLayout {
 			@Override
 			public void afterTextChanged(Editable s) {
 				// TODO Auto-generated method stub
+
+		        AlertItemView.this.mItemModel.setContent(s.toString());
 				if (AlertItemView.this.mEditText.getLineCount() <= 3)
 		        {
-					this.lastStr = s.toString();
-			        AlertItemView.this.mItemModel.setContent(this.lastStr);
-			        AlertItemView.this.adjustHeight();
+					this.shortStr = s.toString();
 		        }
 				else {
-					AlertItemView.this.mEditText.setText(this.lastStr);
-					AlertItemView.this.mEditText.setSelection(this.lastStr.length());
+					AlertItemView.this.mItemModel.setShortContent(this.shortStr);
 				}
+		        AlertItemView.this.adjustHeight();
 			}
 			
 		});
@@ -246,7 +246,7 @@ public class AlertItemView extends LinearLayout {
 
 		this.mItemModel = itemModel;
 		this.mEditText.setText(this.mItemModel.getContent());
-		this.mTextView.setText(this.mItemModel.getContent());
+		this.mTextView.setText(this.mItemModel.getShortContent());
 		
 		this.changeBgColor(this.mItemModel.getBgColorId());
 		
@@ -290,6 +290,7 @@ public class AlertItemView extends LinearLayout {
 		}else if(this.status == STATUS_EDIT){
 			ContentValues cv = new ContentValues();
 			cv.put(AlertItemModel.MODIFY_DATE, new Date().getTime());
+			cv.put(AlertItemModel.SHORT_CONTENT, AlertItemView.this.getShortContent());
 			cv.put(AlertItemModel.CONTENT, AlertItemView.this.mTextView.getText().toString());
 			dbHelper.update(cv, 
 					AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
@@ -301,7 +302,7 @@ public class AlertItemView extends LinearLayout {
 		this.hideMenu();
 		this.status = STATUS_NORMAL;
 	}
-	
+
 	public void showMenu(){
 		this.mMenu.setVisibility(View.VISIBLE);
 	}
@@ -331,9 +332,9 @@ public class AlertItemView extends LinearLayout {
 	public void shareContent(){
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
-		intent.putExtra(Intent.EXTRA_TITLE, "分享我的提醒");
+		intent.putExtra(Intent.EXTRA_TITLE, "Share my alert...");
 		intent.putExtra(Intent.EXTRA_TEXT, "I have a event to share: " + this.mItemModel.getContent() + "\nFrom lightclock");
-		this.getContext().startActivity(Intent.createChooser(intent, "分享"));
+		this.getContext().startActivity(Intent.createChooser(intent, "Share"));
 	}
 	
 	public void setBgColor(){
@@ -363,7 +364,6 @@ public class AlertItemView extends LinearLayout {
 	public void updateSequence(){
 		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
 		ContentValues cv = new ContentValues();
-		cv.put(AlertItemModel.MODIFY_DATE, new Date().toString());
 		cv.put(AlertItemModel.SEQUENCE, this.mItemModel.getSequence());
 		dbHelper.update(cv, 
 				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
@@ -387,7 +387,12 @@ public class AlertItemView extends LinearLayout {
 	public int getStatus(){
 		return this.status;
 	}
-
+	
+	private String getShortContent() {
+		// TODO Auto-generated method stub
+		return this.mItemModel.getShortContent();
+	}
+	
 	public String getContent(){
 		return this.mItemModel.getContent();
 	}
