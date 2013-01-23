@@ -160,7 +160,6 @@ public class MainView  extends LinearLayout {
 		// TODO Auto-generated method stub
 		this.mListView = (AlertListView)findViewById(R.id.alert_list);
 		this.mListView.setOnItemClickListener(new OnItemClickListener(){
-
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
@@ -298,7 +297,10 @@ public class MainView  extends LinearLayout {
 							&& MainView.this.mCurItemView.getContent().equals("")){
 						MainView.this.removeHandler.sendEmptyMessageDelayed(position, 200L);
 					}
-					else MainView.this.mCurItemView.endEdit();
+					else {
+						MainView.this.mCurItemView.endEdit();
+						
+					}
 				}
 				AlertItemView mItemView;
 				int count = MainView.this.mListView.getCount();

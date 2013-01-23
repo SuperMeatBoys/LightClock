@@ -6,87 +6,91 @@
     android:layout_marginTop="10dip" >
     <LinearLayout
         android:id="@+id/item_menu"
-        android:visibility="gone"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:background="#FFFFFFFF"
         >
+        <TextView android:id="@+id/item_modify_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="5dip"
+            android:textSize="15sp"
+            />
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="right"
+			>
         <TextView android:id="@+id/item_clock"
             android:text="@string/item_menu_clock"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:padding="5dip"
-            android:layout_weight="1.0"
-            android:gravity="center"
-            android:textSize="15sp"/>
-        <TextView android:id="@+id/item_share"
-            android:text="@string/item_menu_share"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:layout_weight="1.0"
-            android:gravity="center"
-            android:textSize="15sp"/>
-        <TextView android:id="@+id/item_color"
-            android:text="@string/item_menu_color"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:layout_weight="1.0"
-            android:gravity="center"
             android:textSize="15sp"
-            android:textColor="#8B008B"/>
+            android:layout_gravity="bottom"
+            android:gravity="center"/>
+
+        <TextView
+            android:id="@+id/item_share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:padding="5dip"
+            android:text="@string/item_menu_share"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/item_color"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:gravity="center"
+            android:padding="5dip"
+            android:text="@string/item_menu_color"
+            android:textColor="#8B008B"
+            android:textSize="15sp" />
+		</LinearLayout>
     </LinearLayout>
     
 	<LinearLayout
         android:id="@+id/item_color_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="5dip"
         android:visibility="gone"
         android:orientation="horizontal"
         android:background="#FFFFFFFF"
         >
-        <TextView android:id="@+id/color_1"
-            android:text=" "
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:textSize="15sp"
-            android:layout_weight="1.0"
+        <View android:id="@+id/color_1"
+            android:layout_margin="5dip"
+            android:layout_width="20dip"
+            android:layout_height="20dip"
             android:layout_gravity="center"/>
-        <TextView android:id="@+id/color_2"
-            android:text=" "
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:textSize="15sp"
-            android:layout_weight="1.0"
+        <View android:id="@+id/color_2"
+            android:layout_margin="5dip"
+            android:layout_width="20dip"
+            android:layout_height="20dip"
             android:layout_gravity="center"/>
-        <TextView android:id="@+id/color_3"
-            android:text=" "
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:textSize="15sp"
-            android:layout_weight="1.0"
+        <View android:id="@+id/color_3"
+            android:layout_margin="5dip"
+            android:layout_width="20dip"
+            android:layout_height="20dip"
             android:layout_gravity="center"/>
-        <TextView android:id="@+id/color_4"
-            android:text=" "
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
-            android:textSize="15sp"
-            android:layout_weight="1.0"
+        <View android:id="@+id/color_4"
+            android:layout_margin="5dip"
+            android:layout_width="20dip"
+            android:layout_height="20dip"
             android:layout_gravity="center"/>
         <TextView android:id="@+id/color_ok"
             android:text="@string/color_ok"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="5dip"
+            android:layout_width="15dip"
+            android:layout_height="15dip"
             android:textSize="15sp"
-            android:layout_weight="1"
-            android:gravity="center"/>
+            android:layout_gravity="center"/>
     </LinearLayout>
     <RelativeLayout 
         android:id="@+id/alert_content"

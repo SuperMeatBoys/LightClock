@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -43,15 +44,16 @@ public class AlertItemView extends LinearLayout {
 	private TextView mTextView;
 	
 	private LinearLayout mMenu;
+	private TextView mModifyTime;
 	private TextView mClock;
 	private TextView mShare;
 	private TextView mColor;
 	
 	private LinearLayout mColorList;
-	private TextView mColor1;
-	private TextView mColor2;
-	private TextView mColor3;
-	private TextView mColor4;
+	private View mColor1;
+	private View mColor2;
+	private View mColor3;
+	private View mColor4;
 	private TextView mColorOk;
 	
 	private InputMethodManager inputManager;
@@ -176,10 +178,11 @@ public class AlertItemView extends LinearLayout {
 		});
 		
 		this.mMenu = (LinearLayout)findViewById(R.id.item_menu);
+		this.mModifyTime = (TextView)findViewById(R.id.item_modify_time);
 		this.mClock = (TextView)findViewById(R.id.item_clock);
 		this.mShare = (TextView)findViewById(R.id.item_share);
 		this.mColor = (TextView)findViewById(R.id.item_color);
-
+		
 		this.mClock.setOnTouchListener(itemTouchListener);
 		this.mClock.setOnClickListener(new OnClickListener(){
 
@@ -214,16 +217,16 @@ public class AlertItemView extends LinearLayout {
 		});
 		
 		this.mColorList = (LinearLayout)findViewById(R.id.item_color_list);
-		this.mColor1 = (TextView)findViewById(R.id.color_1);
+		this.mColor1 = (View)findViewById(R.id.color_1);
 		this.mColor1.setOnClickListener(changeColorListener);
 		this.mColor1.setBackgroundColor(BgColor.COLOR_1);
-		this.mColor2 = (TextView)findViewById(R.id.color_2);
+		this.mColor2 = (View)findViewById(R.id.color_2);
 		this.mColor2.setOnClickListener(changeColorListener);
 		this.mColor2.setBackgroundColor(BgColor.COLOR_2);
-		this.mColor3 = (TextView)findViewById(R.id.color_3);
+		this.mColor3 = (View)findViewById(R.id.color_3);
 		this.mColor3.setOnClickListener(changeColorListener);
 		this.mColor3.setBackgroundColor(BgColor.COLOR_3);
-		this.mColor4 = (TextView)findViewById(R.id.color_4);
+		this.mColor4 = (View)findViewById(R.id.color_4);
 		this.mColor4.setOnClickListener(changeColorListener);
 		this.mColor4.setBackgroundColor(BgColor.COLOR_4);
 		this.mColorOk = (TextView)findViewById(R.id.color_ok);
@@ -250,6 +253,11 @@ public class AlertItemView extends LinearLayout {
 		if(itemModel.getId() == -1){
 			this.setVisibility(View.INVISIBLE);
 		}
+
+		this.mModifyTime.setText(DateUtils.formatDateTime(this.getContext(),
+                this.mItemModel.getModifyDate(), DateUtils.FORMAT_SHOW_DATE
+                | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
+                | DateUtils.FORMAT_SHOW_YEAR));
 	}
 	
 	public void startEdit(boolean isCreate){
@@ -269,15 +277,16 @@ public class AlertItemView extends LinearLayout {
 	
 	public void endEdit(){
 		this.mTextView.setText(this.mItemModel.getContent());
-		this.hideMenu();
 		this.mEditText.setVisibility(View.GONE);
 		this.mTextView.setVisibility(View.VISIBLE);
 		this.resizeListener = null;
 		inputManager.hideSoftInputFromWindow(this.mEditText.getWindowToken(), 0);
 		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
+		Log.d(TAG, ""+this.status);
 		if(this.status == STATUS_CREATE){
 			Long id = dbHelper.insert(this.mItemModel.formatContentValuesWithoutId());
 			this.mItemModel.setId(id);
+			Log.d(TAG, "item saved");
 		}else if(this.status == STATUS_EDIT){
 			ContentValues cv = new ContentValues();
 			cv.put(AlertItemModel.MODIFY_DATE, new Date().getTime());
@@ -285,9 +294,11 @@ public class AlertItemView extends LinearLayout {
 			dbHelper.update(cv, 
 					AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
 					null);
+			Log.d(TAG,"item modified");
 			
 		}
 		dbHelper.close();
+		this.hideMenu();
 		this.status = STATUS_NORMAL;
 	}
 	
