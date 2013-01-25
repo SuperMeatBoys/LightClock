@@ -1,6 +1,7 @@
 package com.gesuper.lightclock.view;
 
 import java.util.Date;
+import java.util.Random;
 
 import com.gesuper.lightclock.activity.*;
 import com.gesuper.lightclock.R;
@@ -358,6 +359,7 @@ public class AlertItemView extends LinearLayout {
 			color = BgColor.COLOR_4;
 			break;
 		}
+		this.mItemModel.setBgColorId(colorId);
 		this.mContent.setBackgroundColor(color);
 	}
 	
@@ -431,5 +433,11 @@ public class AlertItemView extends LinearLayout {
 	public AlertItemModel getModel() {
 		// TODO Auto-generated method stub
 		return this.mItemModel;
+	}
+	
+	public void setRandBgColor() {
+		// TODO Auto-generated method stub
+		Random rand = new Random();
+		this.changeBgColor(rand.nextInt(BgColor.COLOR_COUNT) + 1);
 	}
 }

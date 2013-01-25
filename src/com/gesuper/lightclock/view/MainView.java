@@ -47,7 +47,7 @@ public class MainView  extends LinearLayout {
 			
 			final int position = message.what;
 			MainView.this.mCurItemView = 
-					(AlertItemView) MainView.this.mListView.getChildAt(
+					(AlertItemView) MainView.this.mListView.getItemAt(
 							position - MainView.this.mListView.getFirstVisiblePosition()
 					);
 				
@@ -88,7 +88,7 @@ public class MainView  extends LinearLayout {
 			if(position < 0 || position > MainView.this.mListView.getCount() || MainView.this.mListView.getCount() == 0)
 				return ;
 			MainView.this.mCurItemView = 
-					(AlertItemView) MainView.this.mListView.getChildAt(
+					(AlertItemView) MainView.this.mListView.getItemAt(
 							position - MainView.this.mListView.getFirstVisiblePosition()
 					);
 			if(MainView.this.mCurItemView != null){
@@ -154,6 +154,7 @@ public class MainView  extends LinearLayout {
 	private void initResource() {
 		// TODO Auto-generated method stub
 		this.mListView = (AlertListView)findViewById(R.id.alert_list);
+		this.mListView.setMainView(this);
 		this.mListView.setOnItemClickListener(new OnItemClickListener(){
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
@@ -189,7 +190,7 @@ public class MainView  extends LinearLayout {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				MainView.this.beforeAddItem();
-				MainView.this.addNewItem();
+				//MainView.this.addNewItem();
 			}
 		});
 		
@@ -202,11 +203,12 @@ public class MainView  extends LinearLayout {
 		}
 	}
 	
-	public boolean addNewItem(){
+	public boolean addNewItem(int bgColorId){
 		Log.d(TAG, "new items created !");
 
-		this.createHandler.sendEmptyMessageDelayed(0, 300);
 		AlertItemModel mItemModel = new AlertItemModel();
+		mItemModel.setBgColorId(bgColorId);
+		this.createHandler.sendEmptyMessageDelayed(0, 300);
 		this.mAdapter.insert(mItemModel, 0);
 		this.requestFocus();
 		return true;
@@ -277,8 +279,9 @@ public class MainView  extends LinearLayout {
 				AlertItemView mItemView;
 				int count = MainView.this.mListView.getCount();
 				for(int i=0;i<count;i++){
-					mItemView = (AlertItemView) MainView.this.mListView.getChildAt(i);
-					mItemView.setTranslucence(false);
+					mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
+					if(mItemView != null)
+						mItemView.setTranslucence(false);
 				}
 			}
 			
@@ -313,9 +316,12 @@ public class MainView  extends LinearLayout {
 		int firstVisiblePosition =  this.mListView.getFirstVisiblePosition();
 		AlertItemView mItemView;
 		for(int i=0; i<this.mListView.getCount(); i++){
-			if (i == position) continue;
-			mItemView = (AlertItemView) this.mListView.getChildAt(i - firstVisiblePosition);
-			mItemView.setTranslucence(true);
+			mItemView = (AlertItemView) this.mListView.getItemAt(i - firstVisiblePosition);
+
+			if(mItemView != null){
+				if(mItemView.equals(this.mCurItemView)) continue;
+				mItemView.setTranslucence(true);
+			}
 		}
 	}
 	
@@ -333,8 +339,8 @@ public class MainView  extends LinearLayout {
 	    if (this.mAdapter != null){
 	    	for (int i = 0; i < this.mAdapter.getCount(); i++)
 	    	{
-	    		AlertItemView mItemView = (AlertItemView)this.mListView.getChildAt(i);
-	    		if (mItemView.getSequence() != i)
+	    		AlertItemView mItemView = (AlertItemView)this.mListView.getItemAt(i);
+	    		if (mItemView != null && mItemView.getSequence() != i)
 	    		{
 	    			mItemView.setSequence(i);
 	    			mItemView.updateSequence();
