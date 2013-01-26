@@ -4,6 +4,34 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="10dip" >
+    
+    <RelativeLayout 
+        android:id="@+id/alert_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+        
+        <TextView android:id="@+id/tv_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17.0sp"
+            android:padding="12dip" 
+	        android:background="@null" 
+            android:maxLines="3"
+        />
+        <EditText android:id="@+id/ed_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:padding="12dip"
+            android:maxLines="3"
+        	android:visibility="gone" 
+	        android:background="@null" 
+	        android:scrollHorizontally="false"
+            android:inputType="textMultiLine" 
+	        android:imeOptions="actionDone"/>
+        
+    </RelativeLayout>
     <LinearLayout
         android:id="@+id/item_menu"
         android:layout_width="fill_parent"
@@ -12,18 +40,6 @@
         android:visibility="gone"
         android:background="#FFFFFFFF"
         >
-        <TextView android:id="@+id/item_modify_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dip"
-            android:textSize="15sp"
-            />
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-			>
         <TextView android:id="@+id/item_clock"
             android:text="@string/item_menu_clock"
             android:layout_width="wrap_content"
@@ -53,6 +69,19 @@
             android:text="@string/item_menu_color"
             android:textColor="#8B008B"
             android:textSize="15sp" />
+        
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+			>
+	        <TextView android:id="@+id/item_modify_time"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:gravity="center"
+	            android:padding="5dip"
+	            android:textSize="15sp"
+	            />
 		</LinearLayout>
     </LinearLayout>
     
@@ -92,32 +121,4 @@
             android:textSize="15sp"
             android:layout_gravity="center"/>
     </LinearLayout>
-    <RelativeLayout 
-        android:id="@+id/alert_content"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        >
-        
-        <TextView android:id="@+id/tv_content"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="17.0sp"
-            android:padding="12dip" 
-	        android:background="@null" 
-            android:maxLines="3"
-        />
-        <EditText android:id="@+id/ed_content"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:padding="12dip"
-            android:maxLines="3"
-        	android:visibility="gone" 
-	        android:background="@null" 
-	        android:scrollHorizontally="false"
-            android:inputType="textMultiLine" 
-	        android:imeOptions="actionDone"/>
-        
-    </RelativeLayout>
-    
 </LinearLayout>
