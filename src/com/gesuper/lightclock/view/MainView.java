@@ -26,7 +26,6 @@ import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
@@ -38,7 +37,6 @@ public class MainView  extends LinearLayout {
 	private Context mContext;
 	private ArrayList<AlertItemModel> mAlertListArray;
 	private AlertListView mListView ;
-	private Button mNewButton ;
 	private AlertItemView mCurItemView;
 	private PopupWindow mPopView;
 	private AlertListAdapter mAdapter;
@@ -166,16 +164,6 @@ public class MainView  extends LinearLayout {
 				this.mAlertListArray);
 		Log.d(TAG, "set adapter");
 		this.mListView.setAdapter(this.mAdapter);
-		
-		this.mNewButton = (Button)findViewById(R.id.new_alert);
-		this.mNewButton.setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				MainView.this.beforeAddItem();
-				//MainView.this.addNewItem();
-			}
-		});
 		
 	}
 
