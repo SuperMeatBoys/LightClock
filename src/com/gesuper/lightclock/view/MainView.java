@@ -23,6 +23,7 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.TranslateAnimation;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -54,6 +55,7 @@ public class MainView  extends LinearLayout {
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
 			MainView.this.mCurItemView.startEdit(true);
+			MainView.this.mCurItemView.showMenu();
 		}
 	};
 	
@@ -85,6 +87,10 @@ public class MainView  extends LinearLayout {
 					@Override
 					public void onAnimationEnd(Animation animation) {
 						// TODO Auto-generated method stub
+						InputMethodManager inputManager =
+				                (InputMethodManager)MainView.this.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+						inputManager.hideSoftInputFromWindow(
+								MainView.this.mListView.getWindowToken(), 0);
 						MainView.this.deleteItem(position);
 					}
 
