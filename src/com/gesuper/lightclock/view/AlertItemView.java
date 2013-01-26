@@ -250,10 +250,6 @@ public class AlertItemView extends LinearLayout {
 		this.mTextView.setText(this.mItemModel.getShortContentForTextView());
 		
 		this.changeBgColor(this.mItemModel.getBgColorId());
-		
-		if(itemModel.getId() == -1){
-			this.setVisibility(View.INVISIBLE);
-		}
 
 		this.mModifyTime.setText(DateUtils.formatDateTime(this.getContext(),
                 this.mItemModel.getModifyDate(), DateUtils.FORMAT_SHOW_DATE

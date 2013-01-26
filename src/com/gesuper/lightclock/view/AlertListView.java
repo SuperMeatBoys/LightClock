@@ -22,7 +22,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 	public static final int PULL_DOWN = 0;
 	public static final int RELEASE_UP = 1;
 	public static final int REFRESH_DONE = 2;
-	
+	public static final int RATIO = 1;
 	private MainView mMainView;
 	
 	private boolean isRecored;
@@ -32,7 +32,6 @@ public class AlertListView extends ListView implements OnScrollListener {
 	private int status;
 	private AlertItemView headView;
 	private int headContentHeight;
-	private EditText mEditText;
 	private TextView mTextView;
 	
 	public AlertListView(Context context, AttributeSet attrs) {
@@ -46,6 +45,8 @@ public class AlertListView extends ListView implements OnScrollListener {
 	}
 	
 	private void initResource(){
+		//hide scroll bar
+		this.setVerticalScrollBarEnabled(true);
 		this.isRecored = false;
 		this.isRefreshable = true;
 		this.status = REFRESH_DONE;
@@ -54,7 +55,6 @@ public class AlertListView extends ListView implements OnScrollListener {
 		
 		headView = new AlertItemView(this.getContext());
 		headView.setModel(mItemModel);
-		mEditText = (EditText)headView.findViewById(R.id.ed_content);
 		mTextView = (TextView)headView.findViewById(R.id.tv_content);
 		this.measureView(headView);
 		this.headContentHeight = this.headView.getMeasuredHeight();
@@ -68,6 +68,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 	
 	@Override
 	public boolean onTouchEvent(MotionEvent event){
+		int paddingTop;
 		if(isRefreshable){
 			switch(event.getAction()){
 			case MotionEvent.ACTION_DOWN:
@@ -78,18 +79,15 @@ public class AlertListView extends ListView implements OnScrollListener {
 				}
 				break;
 			case MotionEvent.ACTION_UP:
-				if(status == REFRESH_DONE){
-					
-				}
-				if(status == PULL_DOWN){
-					status = REFRESH_DONE;
-					changeHeaderViewByStatus();
-				}
 				if(status == RELEASE_UP){
 					status = REFRESH_DONE;
 					changeHeaderViewByStatus();
 					createNewAlert();
+				}else{
+					status = REFRESH_DONE;
+					changeHeaderViewByStatus();
 				}
+				
 				isRecored = false;
 				break;
 			case MotionEvent.ACTION_MOVE:
@@ -110,7 +108,8 @@ public class AlertListView extends ListView implements OnScrollListener {
 					}else{
 						break;
 					}
-					headView.setPadding(0, -1 * headContentHeight + (tmpY - startY), 
+					paddingTop = (tmpY - startY) - headContentHeight;
+					headView.setPadding(0, paddingTop < 0 ? paddingTop : 0, 
 							0, 0);
 				}
 				else if(this.status == PULL_DOWN){
@@ -122,7 +121,8 @@ public class AlertListView extends ListView implements OnScrollListener {
 						this.status = REFRESH_DONE;
 						changeHeaderViewByStatus();
 					}
-					headView.setPadding(0, -1 * headContentHeight + (tmpY - startY), 
+					paddingTop = (tmpY - startY) - headContentHeight;
+					headView.setPadding(0, paddingTop < 0 ? paddingTop : 0, 
 							0, 0);
 				}
 				else if(this.status == REFRESH_DONE){
@@ -147,9 +147,14 @@ public class AlertListView extends ListView implements OnScrollListener {
 		// TODO Auto-generated method stub
 		switch(status){
 		case PULL_DOWN:
-			
+			this.mTextView.setHint("pull down to create");
+			break;
+		case RELEASE_UP:
+			this.mTextView.setHint("release to create");
+			break;
 		case REFRESH_DONE:
-			
+			this.mTextView.setHint("click to edit");
+			break;
 		}
 	}
 	
@@ -173,6 +178,10 @@ public class AlertListView extends ListView implements OnScrollListener {
 	public void setMainView(MainView mainView) {
 		// TODO Auto-generated method stub
 		this.mMainView = mainView;
+	}
+	
+	public boolean isRecored(){
+		return this.isRecored;
 	}
 	
 	@SuppressWarnings("deprecation")

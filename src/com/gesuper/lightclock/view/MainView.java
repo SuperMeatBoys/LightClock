@@ -50,34 +50,10 @@ public class MainView  extends LinearLayout {
 					(AlertItemView) MainView.this.mListView.getItemAt(
 							position - MainView.this.mListView.getFirstVisiblePosition()
 					);
-				
-			TranslateAnimation translateAnimation = new TranslateAnimation(0.0F, 0.0F, -MainView.this.mCurItemView.getHeight(), 0.0F);
-	        translateAnimation.setDuration(300L);
-	        translateAnimation.setAnimationListener(new AnimationListener(){
-
-				@Override
-				public void onAnimationStart(Animation animation) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void onAnimationEnd(Animation animation) {
-					// TODO Auto-generated method stub
-					MainView.this.mCurItemView.setVisibility(View.VISIBLE);
-					MainView.this.createTopRectView(position);
-					MainView.this.mCurItemView.startEdit(true);
-				}
-
-				@Override
-				public void onAnimationRepeat(Animation animation) {
-					// TODO Auto-generated method stub
-					
-				}
-	        	
-	        });
-	        Log.d(TAG, "start create animation");
-	        MainView.this.mCurItemView.startAnimation(translateAnimation);
+			
+			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
+			MainView.this.createTopRectView(position);
+			MainView.this.mCurItemView.startEdit(true);
 		}
 	};
 	
@@ -162,6 +138,7 @@ public class MainView  extends LinearLayout {
 				// TODO Auto-generated method stub
 				if(view instanceof AlertItemView){
 					MainView.this.mCurItemView = ((AlertItemView) view);
+					if(MainView.this.mListView.isRecored()) return;
 					if(MainView.this.mCurItemView.getStatus() != AlertItemView.STATUS_NORMAL) return ;
 					MainView.this.mCurItemView.showMenu();
 					MainView.this.editHandler.sendEmptyMessageDelayed(position, 50);
@@ -210,6 +187,7 @@ public class MainView  extends LinearLayout {
 		mItemModel.setBgColorId(bgColorId);
 		this.createHandler.sendEmptyMessageDelayed(0, 300);
 		this.mAdapter.insert(mItemModel, 0);
+		
 		this.requestFocus();
 		return true;
 	}
