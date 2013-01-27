@@ -22,7 +22,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 	public static final int PULL_DOWN = 0;
 	public static final int RELEASE_UP = 1;
 	public static final int REFRESH_DONE = 2;
-	public static final int RATIO = 1;
+	
 	private MainView mMainView;
 	
 	private boolean isRecored;
@@ -30,6 +30,8 @@ public class AlertListView extends ListView implements OnScrollListener {
 	private int firstItemIndex;
 	private int startY;
 	private int status;
+	
+	private int RATIO = 1;
 	private AlertItemView headView;
 	private int headContentHeight;
 	private TextView mTextView;
@@ -86,6 +88,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 				}else{
 					status = REFRESH_DONE;
 					changeHeaderViewByStatus();
+					this.headView.setPadding(0, -this.headContentHeight, 0, 0);
 				}
 				
 				isRecored = false;
@@ -105,11 +108,11 @@ public class AlertListView extends ListView implements OnScrollListener {
 					else if(tmpY-startY < headContentHeight){
 						this.status = PULL_DOWN;
 						changeHeaderViewByStatus();
-					}else{
+					} else if(tmpY-startY > 4 * headContentHeight){
 						break;
 					}
 					paddingTop = (tmpY - startY) - headContentHeight;
-					headView.setPadding(0, paddingTop < 0 ? paddingTop : 0, 
+					headView.setPadding(0, paddingTop / this.RATIO, 
 							0, 0);
 				}
 				else if(this.status == PULL_DOWN){
@@ -122,7 +125,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 						changeHeaderViewByStatus();
 					}
 					paddingTop = (tmpY - startY) - headContentHeight;
-					headView.setPadding(0, paddingTop < 0 ? paddingTop : 0, 
+					headView.setPadding(0, paddingTop / this.RATIO, 
 							0, 0);
 				}
 				else if(this.status == REFRESH_DONE){
@@ -139,7 +142,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 
 	private void createNewAlert() {
 		// TODO Auto-generated method stub
-		this.headView.setPadding(0, -1*this.headContentHeight, 0, 0);
+		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
 		this.mMainView.addNewItem(this.headView.getModel().getBgColorId());
 	}
 
@@ -148,11 +151,14 @@ public class AlertListView extends ListView implements OnScrollListener {
 		switch(status){
 		case PULL_DOWN:
 			this.mTextView.setHint("pull down to create");
+			this.RATIO = 1;
 			break;
 		case RELEASE_UP:
+			this.RATIO = 4;
 			this.mTextView.setHint("release to create");
 			break;
 		case REFRESH_DONE:
+			this.RATIO = 1;
 			this.mTextView.setHint("click to edit");
 			break;
 		}

@@ -90,6 +90,7 @@ public class MainView  extends LinearLayout {
 						inputManager.hideSoftInputFromWindow(
 								MainView.this.mListView.getWindowToken(), 0);
 						MainView.this.mCurItemView.hideMenu();
+						MainView.this.mCurItemView.setStatusNormal();
 						MainView.this.deleteItem(position);
 					}
 

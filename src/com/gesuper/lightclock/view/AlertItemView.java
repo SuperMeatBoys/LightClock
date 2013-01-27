@@ -436,4 +436,9 @@ public class AlertItemView extends LinearLayout {
 		Random rand = new Random();
 		this.changeBgColor(rand.nextInt(BgColor.COLOR_COUNT) + 1);
 	}
+
+	public void setStatusNormal() {
+		// TODO Auto-generated method stub
+		this.status = STATUS_NORMAL;
+	}
 }
