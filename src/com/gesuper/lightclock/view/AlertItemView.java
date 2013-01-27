@@ -65,8 +65,14 @@ public class AlertItemView extends LinearLayout {
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
 			// TODO Auto-generated method stub
-			v.setBackgroundColor(Color.GREEN);
-			Log.d(TAG, "touch");
+			switch(event.getAction()){
+			case MotionEvent.ACTION_DOWN:
+				v.setBackgroundColor(Color.GREEN);
+				break;
+			case MotionEvent.ACTION_UP:
+				v.setBackgroundColor(Color.WHITE);
+				break;
+			}
 			return false;
 		}
 		
