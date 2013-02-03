@@ -56,6 +56,7 @@ public class AlertListView extends ListView implements OnScrollListener {
 		
 		headView = new AlertItemView(this.getContext());
 		headView.setModel(mItemModel);
+		headView.showMenu();
 		mTextView = (TextView)headView.findViewById(R.id.tv_content);
 		this.measureView(headView);
 		this.headContentHeight = this.headView.getMeasuredHeight();

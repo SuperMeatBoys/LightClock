@@ -20,7 +20,7 @@ public class ClockView extends LinearLayout {
 		
 		inflate(context, R.layout.activity_clock, this);
 		this.mDate = (DatePicker)findViewById(R.id.clock_date);
-		this.mTime = (TimePicker)findViewById(R.id.clock_time);
+		//this.mTime = (TimePicker)findViewById(R.id.clock_time);
 	}
 
 	public long getTime(){

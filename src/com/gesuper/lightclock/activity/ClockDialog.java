@@ -18,9 +18,10 @@ public class ClockDialog extends AlertDialog implements OnClickListener{
 	}
 	
 	@SuppressWarnings("deprecation")
-	protected ClockDialog(Context context) {
+	protected ClockDialog(Context context, long date) {
 		super(context);
 		this.mClockView = new ClockView(context);
+		setView(mClockView);
 		this.mClock = null;
 		setButton(context.getString(R.string.dialog_ok), this);
         setButton2(context.getString(R.string.dialog_cancel), (OnClickListener)null);

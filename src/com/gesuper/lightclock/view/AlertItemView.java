@@ -329,7 +329,9 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	public void AddClock(){
-		this.mMainView.getTime();
+		this.mMenu.setVisibility(View.GONE);
+		this.mMainView.setPopupDismiss();
+		((MainActivity) this.getContext()).getTime();
 	}
 	
 	public void shareContent(){

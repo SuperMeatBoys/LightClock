@@ -2,11 +2,15 @@ package com.gesuper.lightclock.activity;
 
 import com.gesuper.lightclock.R;
 import com.gesuper.lightclock.activity.ClockDialog.OnClockSelectListener;
+import com.gesuper.lightclock.view.ClockView;
 import com.gesuper.lightclock.view.MainView;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Toast;
@@ -34,14 +38,28 @@ public class MainActivity extends Activity {
 	}
 	
 	public void getTime(){
+		View mClockView = new ClockView(this);
 		
-		ClockDialog d = new ClockDialog(this);
-        d.setOnClockSelectListener(new OnClockSelectListener() {
-            public void OnDateTimeSelected(AlertDialog dialog, long date) {
-                Toast.makeText(MainActivity.this, String.valueOf(date), Toast.LENGTH_SHORT).show();
-            }
-        });
-        d.show();
+		Dialog mAlertDialog = new AlertDialog.Builder(this).
+				setTitle(R.string.select_time).
+				setView(mClockView).
+				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						
+					}
+				}).setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						
+					}
+				}).create();
+		mAlertDialog.show();
+		
 	}
 	
 	@Override

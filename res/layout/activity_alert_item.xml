@@ -12,7 +12,21 @@
         android:visibility="gone"
         android:background="#FFFFFFFF"
         >
-        <TextView android:id="@+id/item_clock"
+		
+	    <TextView android:id="@+id/item_modify_time"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:padding="5dip"
+	        android:textSize="15sp"
+	        />        
+        
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+			>
+			<TextView android:id="@+id/item_clock"
             android:text="@string/item_menu_clock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -21,39 +35,26 @@
             android:layout_gravity="bottom"
             android:gravity="center"/>
 
-        <TextView
-            android:id="@+id/item_share"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:gravity="center"
-            android:padding="5dip"
-            android:text="@string/item_menu_share"
-            android:textSize="15sp" />
-
-        <TextView
-            android:id="@+id/item_color"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:gravity="center"
-            android:padding="5dip"
-            android:text="@string/item_menu_color"
-            android:textColor="#8B008B"
-            android:textSize="15sp" />
-        
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-			>
-	        <TextView android:id="@+id/item_modify_time"
+	        <TextView
+	            android:id="@+id/item_share"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
+	            android:layout_gravity="bottom"
 	            android:gravity="center"
 	            android:padding="5dip"
-	            android:textSize="15sp"
-	            />
+	            android:text="@string/item_menu_share"
+	            android:textSize="15sp" />
+			<TextView
+	            android:id="@+id/item_color"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:layout_gravity="bottom"
+	            android:gravity="center"
+	            android:padding="5dip"
+	            android:text="@string/item_menu_color"
+	            android:textColor="#8B008B"
+	            android:textSize="15sp" />
+        
 		</LinearLayout>
     </LinearLayout>
     

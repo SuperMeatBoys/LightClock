@@ -29,6 +29,9 @@ public class AlertListAdapter extends ArrayAdapter<AlertItemModel> {
 		AlertItemModel mItemModel = getItem(position);
 		mItemView.setModel(mItemModel);
 		Log.d(TAG, "get view " + position + " id: " + mItemModel.getId());
+		if(mItemModel.getId() == -1){
+			mItemView.showMenu();
+		}
         return mItemView;
 	}
 }
