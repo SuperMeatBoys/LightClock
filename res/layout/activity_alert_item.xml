@@ -4,35 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="10dip" >
-    
-    <RelativeLayout 
-        android:id="@+id/alert_content"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        >
-        
-        <TextView android:id="@+id/tv_content"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="17.0sp"
-            android:padding="12dip" 
-	        android:background="@null" 
-            android:maxLines="3"
-        />
-        <EditText android:id="@+id/ed_content"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:padding="12dip"
-            android:maxLines="3"
-        	android:visibility="gone" 
-	        android:background="@null" 
-	        android:scrollHorizontally="false"
-            android:inputType="textMultiLine" 
-	        android:imeOptions="actionDone"/>
-        
-    </RelativeLayout>
-    <LinearLayout
+	<LinearLayout
         android:id="@+id/item_menu"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -121,4 +93,33 @@
             android:textSize="15sp"
             android:layout_gravity="center"/>
     </LinearLayout>
+        
+    <RelativeLayout 
+        android:id="@+id/alert_content"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        >
+        
+        <TextView android:id="@+id/tv_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17.0sp"
+            android:padding="12dip" 
+	        android:background="@null" 
+            android:maxLines="3"
+        />
+        <EditText android:id="@+id/ed_content"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:padding="12dip"
+            android:maxLines="3"
+        	android:visibility="gone" 
+	        android:background="@null" 
+	        android:scrollHorizontally="false"
+            android:inputType="textMultiLine" 
+	        android:imeOptions="actionDone"/>
+        
+    </RelativeLayout>
+    
 </LinearLayout>
