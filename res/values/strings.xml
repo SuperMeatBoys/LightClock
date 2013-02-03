@@ -13,4 +13,6 @@
 	<string name="select_time">Select time</string>
 	<string name="dialog_ok">OK</string>
 	<string name="dialog_cancel">Cancel</string>
+	<string name="clock_calendar">Calendar</string>
+	<string name="clock_time">Time</string>
 </resources>
