@@ -11,6 +11,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
@@ -53,6 +55,13 @@ public class AlertItemView extends LinearLayout {
 	private InputMethodManager inputManager;
 	private ResizeListener resizeListener;
 	
+	private Handler mRemoveMenuBackgroundColor = new Handler(){
+		public void handleMessage(Message message){
+			View v = AlertItemView.this.findViewById(message.what);
+			v.setBackgroundColor(Color.WHITE);
+		}
+	};
+	
 	private OnTouchListener itemTouchListener = new OnTouchListener(){
 
 		@Override
@@ -62,8 +71,9 @@ public class AlertItemView extends LinearLayout {
 			case MotionEvent.ACTION_DOWN:
 				v.setBackgroundColor(Color.GREEN);
 				break;
-			case MotionEvent.ACTION_UP:
-				v.setBackgroundColor(Color.WHITE);
+			case MotionEvent.ACTION_UP: 
+				AlertItemView.this.mRemoveMenuBackgroundColor.
+					sendEmptyMessageDelayed(v.getId(), 300);
 				break;
 			}
 			return false;
