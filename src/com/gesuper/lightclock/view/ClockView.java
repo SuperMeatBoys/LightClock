@@ -1,6 +1,5 @@
 package com.gesuper.lightclock.view;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import com.gesuper.lightclock.R;
@@ -24,7 +23,7 @@ public class ClockView extends LinearLayout {
 	
 	private EditText etTime;
 	private Button btnTime;
-	private long time;
+	private Date time;
 	
 	public ClockView(Context context) {
 		super(context);
@@ -37,7 +36,7 @@ public class ClockView extends LinearLayout {
 
 	private void initResource() {
 		// TODO Auto-generated method stub
-		this.time = new Date().getTime();
+		this.time = new Date();
 		this.etCalendar = (EditText)findViewById(R.id.clock_calendar_et);
 		this.btnCalendar = (Button)findViewById(R.id.clock_calendar_btn);
 		
@@ -54,8 +53,8 @@ public class ClockView extends LinearLayout {
 						(LinearLayout) LayoutInflater.from(ClockView.this.getContext()).
 						inflate(R.layout.activity_clock_calendar, null);
 				final DatePicker localDatePicker = (DatePicker)mCalendarView.findViewById(R.id.clock_datepicker);
-		        final Date localDate = new Date(ClockView.this.time);
-		        localDatePicker.init(1900 + localDate.getYear(), localDate.getMonth(), localDate.getDate(), null);
+		        localDatePicker.init(1900 + ClockView.this.time.getYear(), 
+		        		ClockView.this.time.getMonth(), ClockView.this.time.getDate(), null);
 				new AlertDialog.Builder(ClockView.this.getContext()).
 					setTitle(R.string.clock_calendar).
 					setView(mCalendarView).
@@ -64,11 +63,12 @@ public class ClockView extends LinearLayout {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							// TODO Auto-generated method stub
-							localDate.setYear(-1900 + localDatePicker.getYear());
-				            localDate.setMonth(localDatePicker.getMonth());
-				            localDate.setDate(localDatePicker.getDayOfMonth());
+							
+							ClockView.this.time.setYear(-1900 + localDatePicker.getYear());
+							ClockView.this.time.setMonth(localDatePicker.getMonth());
+							ClockView.this.time.setDate(localDatePicker.getDayOfMonth());
 							ClockView.this.etCalendar.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-					                localDate.getTime(), DateUtils.FORMAT_SHOW_DATE
+									ClockView.this.time.getTime(), DateUtils.FORMAT_SHOW_DATE
 					                | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_YEAR));
 						}
 						
@@ -88,10 +88,9 @@ public class ClockView extends LinearLayout {
 						(LinearLayout) LayoutInflater.from(ClockView.this.getContext()).
 						inflate(R.layout.activity_clock_time, null);
 				final TimePicker localTimePicker = (TimePicker)mTimeView.findViewById(R.id.clock_timepicker);
-		        final Date localDate = new Date(ClockView.this.time);
 		        localTimePicker.setIs24HourView(Boolean.valueOf(true));
-		        localTimePicker.setCurrentHour(Integer.valueOf(localDate.getHours()));
-		        localTimePicker.setCurrentMinute(Integer.valueOf(localDate.getMinutes()));
+		        localTimePicker.setCurrentHour(Integer.valueOf(ClockView.this.time.getHours()));
+		        localTimePicker.setCurrentMinute(Integer.valueOf(ClockView.this.time.getMinutes()));
 				new AlertDialog.Builder(ClockView.this.getContext()).
 					setTitle(R.string.clock_time).
 					setView(mTimeView).
@@ -100,12 +99,13 @@ public class ClockView extends LinearLayout {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							// TODO Auto-generated method stub
-							localDate.setHours(localTimePicker.getCurrentHour().intValue());
-				            localDate.setMinutes(localTimePicker.getCurrentMinute().intValue());
-				            localDate.setSeconds(0);
+							ClockView.this.time.setHours(localTimePicker.getCurrentHour().intValue());
+							ClockView.this.time.setMinutes(localTimePicker.getCurrentMinute().intValue());
+							ClockView.this.time.setSeconds(0);
 				            ClockView.this.etTime.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-				                    ClockView.this.time,
+				            		ClockView.this.time.getTime(),
 				                    DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_TIME));
+				            
 						}
 						
 					}).
@@ -114,14 +114,14 @@ public class ClockView extends LinearLayout {
 			
 		});
 		this.etCalendar.setText(DateUtils.formatDateTime(this.getContext(),
-                this.time, DateUtils.FORMAT_SHOW_DATE
+                this.time.getTime(), DateUtils.FORMAT_SHOW_DATE
                 | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_YEAR));
 		this.etTime.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-                this.time,
+                this.time.getTime(),
                 DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_TIME));
 	}
 
-	public long getTime(){
-		return 0;
+	public long getClockTime(){
+		return this.time.getTime();
 	}
 }

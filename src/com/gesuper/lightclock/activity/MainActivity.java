@@ -1,6 +1,7 @@
 package com.gesuper.lightclock.activity;
 
 import com.gesuper.lightclock.R;
+import com.gesuper.lightclock.view.AlertItemView;
 import com.gesuper.lightclock.view.ClockView;
 import com.gesuper.lightclock.view.MainView;
 
@@ -34,8 +35,8 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
-	public void getTime(){
-		View mClockView = new ClockView(this);
+	public void getClockTime(final AlertItemView alertItemView){
+		final ClockView mClockView = new ClockView(this);
 		
 		Dialog mAlertDialog = new AlertDialog.Builder(this).
 				setTitle(R.string.select_time).
@@ -45,16 +46,10 @@ public class MainActivity extends Activity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
-						
+						long time = mClockView.getClockTime();
+						alertItemView.AddClock(time);
 					}
-				}).setNegativeButton(R.string.dialog_cancel, new DialogInterface.OnClickListener() {
-					
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
-						
-					}
-				}).create();
+				}).setNegativeButton(R.string.dialog_cancel, null).create();
 		mAlertDialog.show();
 		
 	}

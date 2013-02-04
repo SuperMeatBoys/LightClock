@@ -9,6 +9,6 @@
 	    android:layout_height="wrap_content"
 	    android:calendarViewShown="false"
 	    android:id="@+id/clock_datepicker"
-	    />"
+	    />
 
 </LinearLayout>

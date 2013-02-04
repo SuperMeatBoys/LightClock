@@ -50,13 +50,6 @@ public class AlertItemView extends LinearLayout {
 	private TextView mShare;
 	private TextView mColor;
 	
-	private LinearLayout mColorList;
-	private View mColor1;
-	private View mColor2;
-	private View mColor3;
-	private View mColor4;
-	private TextView mColorOk;
-	
 	private InputMethodManager inputManager;
 	private ResizeListener resizeListener;
 	
@@ -74,33 +67,6 @@ public class AlertItemView extends LinearLayout {
 				break;
 			}
 			return false;
-		}
-		
-	};
-	
-	private OnClickListener changeColorListener = new OnClickListener(){
-
-		@Override
-		public void onClick(View v) {
-			// TODO Auto-generated method stub
-			switch(v.getId()){
-			case R.id.color_1:
-				AlertItemView.this.mContent.setBackgroundColor(BgColor.COLOR_1);
-				AlertItemView.this.mItemModel.setBgColorId(1);
-				break;
-			case R.id.color_2:
-				AlertItemView.this.mContent.setBackgroundColor(BgColor.COLOR_2);
-				AlertItemView.this.mItemModel.setBgColorId(2);
-				break;
-			case R.id.color_3:
-				AlertItemView.this.mContent.setBackgroundColor(BgColor.COLOR_3);
-				AlertItemView.this.mItemModel.setBgColorId(3);
-				break;
-			case R.id.color_4:
-				AlertItemView.this.mContent.setBackgroundColor(BgColor.COLOR_4);
-				AlertItemView.this.mItemModel.setBgColorId(4);
-				break;
-			}
 		}
 		
 	};
@@ -196,7 +162,7 @@ public class AlertItemView extends LinearLayout {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				AlertItemView.this.AddClock();
+				AlertItemView.this.AddClockMenu();
 			}
 			
 		});
@@ -218,35 +184,15 @@ public class AlertItemView extends LinearLayout {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				AlertItemView.this.setBgColor();
+				int colorId = AlertItemView.this.mItemModel.getBgColorId();
+				colorId += 1;
+				if(colorId > BgColor.COLOR_COUNT)
+					colorId = 1;
+				AlertItemView.this.changeBgColor(colorId);
 			}
 			
 		});
 		
-		this.mColorList = (LinearLayout)findViewById(R.id.item_color_list);
-		this.mColor1 = (View)findViewById(R.id.color_1);
-		this.mColor1.setOnClickListener(changeColorListener);
-		this.mColor1.setBackgroundColor(BgColor.COLOR_1);
-		this.mColor2 = (View)findViewById(R.id.color_2);
-		this.mColor2.setOnClickListener(changeColorListener);
-		this.mColor2.setBackgroundColor(BgColor.COLOR_2);
-		this.mColor3 = (View)findViewById(R.id.color_3);
-		this.mColor3.setOnClickListener(changeColorListener);
-		this.mColor3.setBackgroundColor(BgColor.COLOR_3);
-		this.mColor4 = (View)findViewById(R.id.color_4);
-		this.mColor4.setOnClickListener(changeColorListener);
-		this.mColor4.setBackgroundColor(BgColor.COLOR_4);
-		this.mColorOk = (TextView)findViewById(R.id.color_ok);
-		this.mColorOk.setOnClickListener(new OnClickListener(){
-
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				AlertItemView.this.mColorList.setVisibility(View.GONE);
-				AlertItemView.this.mMainView.setPopupDismiss();
-			}
-			
-		});
 	}
 
 	public void setModel(AlertItemModel itemModel){
@@ -312,7 +258,6 @@ public class AlertItemView extends LinearLayout {
 	
 	public void hideMenu(){
 		this.mMenu.setVisibility(View.GONE);
-		this.mColorList.setVisibility(View.GONE);
 		
 		this.status = STATUS_NORMAL;
 	}
@@ -328,10 +273,20 @@ public class AlertItemView extends LinearLayout {
 		return result;
 	}
 	
-	public void AddClock(){
+	public void AddClockMenu(){
 		this.mMenu.setVisibility(View.GONE);
 		this.mMainView.setPopupDismiss();
-		((MainActivity) this.getContext()).getTime();
+		((MainActivity) this.getContext()).getClockTime(this);
+	}
+	
+	public void AddClock(long alertTime){
+		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
+		ContentValues cv = new ContentValues();
+		cv.put(AlertItemModel.ALERT_DATE, alertTime);
+		dbHelper.update(cv, 
+				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
+				null);
+		dbHelper.close();
 	}
 	
 	public void shareContent(){
@@ -344,7 +299,6 @@ public class AlertItemView extends LinearLayout {
 	
 	public void setBgColor(){
 		this.mMenu.setVisibility(View.GONE);
-		this.mColorList.setVisibility(View.VISIBLE);
 	}
 	
 	public void changeBgColor(int colorId){
@@ -363,6 +317,7 @@ public class AlertItemView extends LinearLayout {
 			color = BgColor.COLOR_4;
 			break;
 		}
+		
 		this.mItemModel.setBgColorId(colorId);
 		this.mContent.setBackgroundColor(color);
 	}

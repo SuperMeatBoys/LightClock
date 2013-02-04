@@ -37,7 +37,7 @@ public class ClockDialog extends AlertDialog implements OnClickListener{
 	public void onClick(DialogInterface dialog, int which) {
 		// TODO Auto-generated method stub
 		if(this.mClock != null)
-			this.mClock.OnDateTimeSelected(this, this.mClockView.getTime());
+			this.mClock.OnDateTimeSelected(this, this.mClockView.getClockTime());
 	}
 	
 	public void setOnClockSelectListener(OnClockSelectListener mClockSelectListener){
