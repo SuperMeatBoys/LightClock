@@ -261,7 +261,14 @@ public class AlertItemView extends LinearLayout {
 		this.hideMenu();
 		this.status = STATUS_NORMAL;
 	}
-
+	
+	public static void addTestItem(Context context){
+		AlertItemModel model = new AlertItemModel();
+		model.setContent("That's the final one, thanks!");
+		DBHelperModel dbHelper = new DBHelperModel(context);
+		Long id = dbHelper.insert(model.formatContentValuesWithoutId());
+	}
+	
 	public void showMenu(){
 		this.mMenu.setVisibility(View.VISIBLE);
 	}
