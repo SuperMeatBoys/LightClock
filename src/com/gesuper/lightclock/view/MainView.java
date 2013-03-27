@@ -2,7 +2,6 @@ package com.gesuper.lightclock.view;
 
 import java.util.ArrayList;
 import com.gesuper.lightclock.R;
-import com.gesuper.lightclock.activity.MainActivity;
 import com.gesuper.lightclock.model.AlertItemModel;
 import com.gesuper.lightclock.model.AlertListAdapter;
 import com.gesuper.lightclock.model.DBHelperModel;
@@ -152,10 +151,13 @@ public class MainView  extends LinearLayout {
 			}
 
 		});
-		
 		AlertItemModel mAlertItem;
+		//mAlertItem = new AlertItemModel();
+		//mAlertItem.setContent("I think it's enough.");
+		
 		Log.d(TAG, "init alert list");
 		DBHelperModel dbHelper = new DBHelperModel(this.mContext);
+		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
 		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
 		while(cursor.moveToNext()){
 			mAlertItem = new AlertItemModel(cursor);
@@ -192,7 +194,7 @@ public class MainView  extends LinearLayout {
 		// TODO Auto-generated method stub
 		int[] mPositionScreen = new int[2];
 		int[] mPositionList = new int[2];
-		int[] mPositionItem = new int[3];
+		int[] mPositionItem = new int[2];
 
 		this.getLocationOnScreen(mPositionScreen);
 		this.mListView.getLocationOnScreen(mPositionList);
@@ -301,6 +303,7 @@ public class MainView  extends LinearLayout {
 	
 	public void deleteItem(int position){
 		this.mAdapter.remove(this.mCurItemView.getModel());
+		
 	}
 	
 	public void saveSequence(){
@@ -330,9 +333,19 @@ public class MainView  extends LinearLayout {
 			this.mPopView = null;
 		}
 	}
-
-	public void getTime() {
-		// TODO Auto-generated method stub
-		((MainActivity) this.mContext).getTime();
+	
+	public void exchangeAdapterItem(int x, int y){
+		Log.i(TAG, "x:" + x);
+		AlertItemModel modelX = this.mAdapter.getItem(x-1);
+		this.mAdapter.remove(modelX);
+		this.mAdapter.insert(modelX, y-1);
 	}
+
+	public void refreshAdapter() {
+		// TODO Auto-generated method stub
+		this.saveSequence();
+		this.mAdapter.notifyDataSetChanged();
+	}
+	
+	
 }
