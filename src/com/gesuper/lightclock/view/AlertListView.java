@@ -9,18 +9,21 @@ import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class AlertListView extends ListView {
+public class AlertListView extends ListView{
 
 	public static final String TAG = "AlertListView";
 	public static final int NORMAL = 0;
@@ -30,7 +33,7 @@ public class AlertListView extends ListView {
 	public static final int SEQUENCE = 4;
 	
 	private MainView mMainView;
-	
+	private GestureDetector mSimpleGesture;
 	private boolean isRecored;
 	private int firstItemIndex;
 	private int startY;
@@ -47,6 +50,8 @@ public class AlertListView extends ListView {
     private AlertItemView mDragItemView;
 	private Bitmap mDragBitmap;
 	private ImageView mDragView;
+	//开始位置
+	private int mDragStartPosition;
 	//当前的位置
 	private int mDragCurrentPostion;
 	private int mDragOffSetY;
@@ -73,8 +78,9 @@ public class AlertListView extends ListView {
 		this.isRecored = false;
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
-
 		this.mDragItemView = null;
+		this.mDragStartPosition = -1;
+		this.setDivider(null);
 		AlertItemModel mItemModel = new AlertItemModel();
 		mItemModel.setId((long) -2);
 		
@@ -88,6 +94,7 @@ public class AlertListView extends ListView {
 		this.headView.setPadding(0, -1 * this.headContentHeight, 0, 0);
 		this.headView.invalidate();
 		this.addHeaderView(headView);
+		
 		this.setOnItemLongClickListener(new OnItemLongClickListener(){
 
 			@Override
@@ -96,14 +103,16 @@ public class AlertListView extends ListView {
 				// TODO Auto-generated method stub
 				Log.i(TAG, "on item long click " + position);
 				status = SEQUENCE;
-				view.setDrawingCacheEnabled(true);
-				Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+				View itemContent = view.findViewById(R.id.alert_content);
+				itemContent.setDrawingCacheEnabled(true);
+				Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
 				startDrag(bitmap, mDragPointY + view.getTop());
 				//view.setVisibility(View.INVISIBLE);
 				return false;
 			}
 			
 		});
+		
 	}
 	
 	
@@ -113,73 +122,85 @@ public class AlertListView extends ListView {
 		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
 		this.mMainView.addNewItem(this.headView.getModel().getBgColorId());
 	}
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		final int x, y;
-		switch(event.getAction()){
-		case MotionEvent.ACTION_DOWN:
-			Log.i(TAG, "ACTION DOWN");
-			x = (int)event.getX();
-			y = (int)event.getY();
-			startY = y;
-			final int k = AlertListView.this.pointToPosition(x, y);
-			if( k == ListView.INVALID_POSITION ){
-				break;
-			}
-			mDragItemView = (AlertItemView)this.getChildAt(k - this.getFirstVisiblePosition());
-			
-			if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
-				this.mDragPointX = 9;
-				this.mDragPointY = y - mDragItemView.getTop();
-				this.mDragOffSetY = (int) (event.getRawY() - y);
+	 	// TODO Auto-generated method stub
+	 	final int x, y;
+	 	switch(event.getAction()){
+	 	case MotionEvent.ACTION_DOWN:
+	 		Log.i(TAG, "ACTION DOWN");
+	 		x = (int)event.getX();
+	 		y = (int)event.getY();
+	 		startY = y;
+	 		final int k = AlertListView.this.pointToPosition(x, y);
+	 		if( k == ListView.INVALID_POSITION ){
+	 			break;
+	 		}
+	 		mDragStartPosition = k;
+	 		mDragItemView = (AlertItemView)this.getChildAt(k - this.getFirstVisiblePosition());
+	
+	 		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
+	 			this.mDragPointX = 9;
+	 			this.mDragPointY = y - mDragItemView.getTop();
+	 			this.mDragOffSetY = (int) (event.getRawY() - y);
 				
-				int height = getHeight();
-				mUpperBound = Math.min(y - mTouchSlop, height / 3);
-				mLowerBound = Math.max(y + mTouchSlop, height * 2 / 3);
-				mDragCurrentPostion = k;
-			}
-			break;
-		case MotionEvent.ACTION_UP:
-			Log.i(TAG, "ACTION UP");
-			if(this.status == SEQUENCE){
-				stopDrag();
-				//if(mDragItemView != null)
-				//mDragItemView.setVisibility(View.VISIBLE);
+	 			int height = getHeight();
+	 			mUpperBound = Math.min(y - mTouchSlop, height / 3);
+	 			mLowerBound = Math.max(y + mTouchSlop, height * 2 / 3);
+	 			mDragCurrentPostion = k;
+	 		}
+	 		break;
+	 	case MotionEvent.ACTION_UP:
+	 		Log.i(TAG, "ACTION UP");
+	 		y = (int) event.getY();
+	 		if(this.status == SEQUENCE){
+	 			//if(mDragItemView != null)
+	 			//mDragItemView.setVisibility(View.VISIBLE);
+				if(y > this.getHeight()){
+	 				Log.d(TAG, "Up drag position:" + mDragStartPosition);
+	 				this.mMainView.updateDeleteColor(false);
+	 				this.mMainView.deleteItem(mDragItemView);
+	 			}
+	 			stopDrag();
+ 				this.mDragStartPosition = -1;
 				this.mMainView.refreshAdapter();
-				this.status = CREATE_REFRESH_DONE;
-			} else if(this.status != NORMAL){
-				if(status == CREATE_RELEASE_UP){
-					status = CREATE_REFRESH_DONE;
-					changeHeaderViewByStatus();
-					createNewAlert();
-				}else{
-					status = CREATE_REFRESH_DONE;
-					changeHeaderViewByStatus();
-					this.headView.setPadding(0, -this.headContentHeight, 0, 0);
-				}
-				isRecored = false;
-			}
-			break;
-		case MotionEvent.ACTION_CANCEL:
-		case MotionEvent.ACTION_MOVE:
-			Log.i(TAG, "ACTION MOVE");
-			y = (int) event.getY();
-			if(this.status == SEQUENCE){
-				dragView(y);
-				adjustScrollBounds(y);
-				
-			} else if(this.status != NORMAL){
-				updateCreateStatus(y);
-				
-			}
-            break;
-		}
-		return super.onTouchEvent(event);
+	 			this.status = CREATE_REFRESH_DONE;
+	 		} else if(this.status != NORMAL){
+	 			if(status == CREATE_RELEASE_UP){
+	 				status = CREATE_REFRESH_DONE;
+	 				changeHeaderViewByStatus();
+	 				createNewAlert();
+	 			}else{
+	 				status = CREATE_REFRESH_DONE;
+	 				changeHeaderViewByStatus();
+	 				this.headView.setPadding(0, -this.headContentHeight, 0, 0);
+	 			}
+	 			isRecored = false;
+	 		}
+	 		break;
+	 	case MotionEvent.ACTION_CANCEL:
+	 	case MotionEvent.ACTION_MOVE:
+	 		Log.i(TAG, "ACTION MOVE");
+	 		y = (int) event.getY();
+	 		if(this.status == SEQUENCE){
+	 			dragView(y);
+	 			adjustScrollBounds(y);
+	 			if(y > this.getHeight()){
+	 				Log.d(TAG, "MOVE y: " + y + " height:" + this.getHeight());
+	 				this.mMainView.updateDeleteColor(true);
+	 			} else this.mMainView.updateDeleteColor(false);
+	 			
+	 		} else if(this.status != NORMAL){
+	 			updateCreateStatus(y);
+			
+	 		}
+                break;
+	 	}
+	 	return super.onTouchEvent(event);
 	}
-
-	private void updateCreateStatus(int y) {
+	
+ 	private void updateCreateStatus(int y) {
 		// TODO Auto-generated method stub
 		if(!isRecored && firstItemIndex == 0){
 			isRecored = true;
@@ -247,6 +268,7 @@ public class AlertListView extends ListView {
 
 	public void startDrag(Bitmap mBitmap, int y){
 		this.stopDrag();
+		this.mMainView.setDeleteVisible(true);
 		this.mWindowParams = new WindowManager.LayoutParams();
 		this.mWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
 		
@@ -302,11 +324,13 @@ public class AlertListView extends ListView {
 			int top = this.getChildAt(mDragCurrentPostion - this.getFirstVisiblePosition()).getTop();
 			setSelectionFromTop(mDragCurrentPostion, top + scrollY);
 		}
+		
     }
 
 
 	
 	public void stopDrag(){
+		this.mMainView.setDeleteVisible(false);
 		if (mDragView != null) {
             WindowManager wm = (WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE);
             wm.removeView(mDragView);
@@ -350,6 +374,9 @@ public class AlertListView extends ListView {
 		this.mMainView = mainView;
 	}
 	
+	public void onItemClicked(int position){
+	}
+	
 	public boolean isRecored(){
 		return this.isRecored;
 	}
@@ -370,4 +397,69 @@ public class AlertListView extends ListView {
 		}
 		child.measure(childWidthSpec, childHeightSpec);
 	}
+	
+	class SimpleGesture extends SimpleOnGestureListener {
+		public boolean onSingleTapUp(MotionEvent e) {
+			// TODO Auto-generated method stub
+			Log.d(TAG, "on single tap up");
+            return false;
+        }
+
+        public void onLongPress(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on long press");
+        }
+
+        public boolean onScroll(MotionEvent e1, MotionEvent e2,
+                float distanceX, float distanceY) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on scroll x:" + distanceX + " y:" + distanceY);
+            return false;
+        }
+
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                float velocityY) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on Fling x:" + velocityX + " y:" + velocityY);
+            return false;
+        }
+
+        public void onShowPress(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "show press");
+        }
+
+        public boolean onDown(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on down");
+            return false;
+        }
+
+        public boolean onDoubleTap(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on double tap");
+            return false;
+        }
+        
+        public boolean onDoubleTapEvent(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on double tap event");
+            return false;
+        }
+        
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+        	// TODO Auto-generated method stub
+        	Log.d(TAG, "on single tap confirmed");
+        	int position = AlertListView.this.pointToPosition((int)e.getX(), (int)e.getY());
+        	if( position == ListView.INVALID_POSITION ){
+        		return false;
+        	}
+    		AlertItemView itemView = (AlertItemView) AlertListView.this.getChildAt
+    				(position - AlertListView.this.getFirstVisiblePosition());
+    		AlertListView.this.mMainView.onItemClicked(position, itemView);
+            return false;
+        }
+	}
+
 }

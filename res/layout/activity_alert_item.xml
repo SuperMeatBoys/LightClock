@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dip" >
+    android:layout_marginBottom="10dip" >
 	<LinearLayout
         android:id="@+id/item_menu"
         android:layout_width="fill_parent"
@@ -104,16 +104,16 @@
         <TextView android:id="@+id/tv_content"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textSize="17.0sp"
-            android:padding="12dip" 
+            android:textSize="20.0sp"
+            android:padding="14dip" 
 	        android:background="@null" 
             android:maxLines="3"
         />
         <EditText android:id="@+id/ed_content"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textSize="17sp"
-            android:padding="12dip"
+            android:textSize="20sp"
+            android:padding="14dip"
             android:maxLines="3"
         	android:visibility="gone" 
 	        android:background="@null" 

@@ -286,7 +286,6 @@ public class AlertItemView extends LinearLayout {
 					null);
 
 		dbHelper.close();
-		this.mMainView.deleteItem(this.mItemModel.getSequence());
 		return result;
 	}
 	

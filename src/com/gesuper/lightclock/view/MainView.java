@@ -8,7 +8,9 @@ import com.gesuper.lightclock.model.DBHelperModel;
 import com.gesuper.lightclock.view.AlertItemView.PopupListener;
 import com.gesuper.lightclock.view.AlertItemView.ResizeListener;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -28,6 +30,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
+import android.widget.TextView;
 
 
 public class MainView  extends LinearLayout {
@@ -39,6 +42,7 @@ public class MainView  extends LinearLayout {
 	private AlertItemView mCurItemView;
 	private PopupWindow mPopView;
 	private AlertListAdapter mAdapter;
+	private TextView mDelete;
 	
 	private Handler createHandler = new Handler(){
 		public void handleMessage(Message message){
@@ -90,7 +94,7 @@ public class MainView  extends LinearLayout {
 								MainView.this.mListView.getWindowToken(), 0);
 						MainView.this.mCurItemView.hideMenu();
 						MainView.this.mCurItemView.setStatusNormal();
-						MainView.this.deleteItem(position);
+						MainView.this.mAdapter.remove(MainView.this.mCurItemView.getModel());
 					}
 
 					@Override
@@ -142,19 +146,15 @@ public class MainView  extends LinearLayout {
 					int position, long id) {
 				// TODO Auto-generated method stub
 				if(view instanceof AlertItemView){
-					MainView.this.mCurItemView = ((AlertItemView) view);
-					if(MainView.this.mListView.isRecored()) return;
-					if(MainView.this.mCurItemView.getStatus() != AlertItemView.STATUS_NORMAL) return ;
-					MainView.this.mCurItemView.showMenu();
-					MainView.this.editHandler.sendEmptyMessageDelayed(position, 50);
+					MainView.this.onItemClicked(position, (AlertItemView) view);
 				}
 			}
 
 		});
 		AlertItemModel mAlertItem;
 		//mAlertItem = new AlertItemModel();
-		//mAlertItem.setContent("I think it's enough.");
-		
+		//mAlertItem.setContent("enough ? are you kidding me?");
+		this.mDelete = (TextView)findViewById(R.id.alert_delete);
 		Log.d(TAG, "init alert list");
 		DBHelperModel dbHelper = new DBHelperModel(this.mContext);
 		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
@@ -171,6 +171,14 @@ public class MainView  extends LinearLayout {
 		
 	}
 
+	public void onItemClicked(int position, AlertItemView view){
+		MainView.this.mCurItemView = view;
+		if(MainView.this.mListView.isRecored()) return;
+		if(MainView.this.mCurItemView.getStatus() != AlertItemView.STATUS_NORMAL) return ;
+		MainView.this.mCurItemView.showMenu();
+		MainView.this.editHandler.sendEmptyMessageDelayed(position, 50);
+	}
+	
 	public void beforeAddItem() {
 		// TODO Auto-generated method stub
 		if(this.mListView.getFirstVisiblePosition() > 0 ){
@@ -301,8 +309,33 @@ public class MainView  extends LinearLayout {
 		}
 	}
 	
-	public void deleteItem(int position){
-		this.mAdapter.remove(this.mCurItemView.getModel());
+	public void setDeleteVisible(boolean f){
+		if(f)
+			this.mDelete.setVisibility(View.VISIBLE);
+		else this.mDelete.setVisibility(View.GONE);
+	}
+	
+	public void updateDeleteColor(boolean f){
+		if(f)
+			this.mDelete.setTextColor(0xFFDC143C);
+		else this.mDelete.setTextColor(0xFF000000);
+	}
+	
+	public void deleteItem(final AlertItemView itemView){
+		//this.mDelete.setTextColor(0xFFDC143C);
+		new AlertDialog.Builder(this.getContext()).
+				setTitle(R.string.item_menu_delete).
+				setMessage("Do you really want to delete it?").
+				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						itemView.deleteItem();
+						mAdapter.remove(itemView.getModel());
+					}
+				}).setNegativeButton(R.string.dialog_cancel, null).show();
+				
 		
 	}
 	
