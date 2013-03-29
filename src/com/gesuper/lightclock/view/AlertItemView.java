@@ -226,6 +226,10 @@ public class AlertItemView extends LinearLayout {
                 this.mItemModel.getModifyDate(), DateUtils.FORMAT_SHOW_DATE
                 | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
                 | DateUtils.FORMAT_SHOW_YEAR));
+		
+		if(this.mItemModel.getAlertDate() > 0){
+			this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
+		}
 	}
 	
 	public void startEdit(boolean isCreate){
@@ -339,6 +343,8 @@ public class AlertItemView extends LinearLayout {
         AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
         //设置闹钟
         am.set(AlarmManager.RTC_WAKEUP, alertTime, pendingIntent);
+        
+        this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
 	}
 
 	protected void deleteClock() {
@@ -479,5 +485,27 @@ public class AlertItemView extends LinearLayout {
 	public void setStatusNormal() {
 		// TODO Auto-generated method stub
 		this.status = STATUS_NORMAL;
+	}
+	
+	@SuppressWarnings("deprecation")
+	private String getFormatClockTime(long clockTime) {
+		// TODO Auto-generated method stub
+		Date dateClock = new Date(clockTime);
+		Date dateNow = new Date();
+		String format = "";
+		if(dateClock.getYear() > dateNow.getYear()){
+			format += String.valueOf(dateClock.getYear()) + "-";
+			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		}
+		else if(dateClock.getMonth() > dateNow.getMonth() || dateClock.getDate() > dateNow.getDate())
+			format = "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		else if(dateClock.getMonth() == dateNow.getMonth() && dateClock.getDate() == dateNow.getDate())
+			format = "" + dateClock.getHours() + ":" + dateClock.getMinutes();
+		else {
+			if(dateClock.getYear() < dateNow.getYear())
+				format += String.valueOf(dateClock.getYear()) + "-";
+			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		}
+		return format;
 	}
 }
