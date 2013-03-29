@@ -150,6 +150,7 @@ public class AlertListView extends ListView{
 	 			mLowerBound = Math.max(y + mTouchSlop, height * 2 / 3);
 	 			mDragCurrentPostion = k;
 	 		}
+	 		this.headView.setRandBgColor();
 	 		break;
 	 	case MotionEvent.ACTION_UP:
 	 		Log.i(TAG, "ACTION UP");
@@ -195,7 +196,7 @@ public class AlertListView extends ListView{
 	 			updateCreateStatus(y);
 			
 	 		}
-                break;
+            break;
 	 	}
 	 	return super.onTouchEvent(event);
 	}
