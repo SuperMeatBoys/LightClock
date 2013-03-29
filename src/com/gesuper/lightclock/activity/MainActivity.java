@@ -35,25 +35,6 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
-	public void getClockTime(final AlertItemView alertItemView){
-		final ClockView mClockView = new ClockView(this);
-		
-		Dialog mAlertDialog = new AlertDialog.Builder(this).
-				setTitle(R.string.select_time).
-				setView(mClockView).
-				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-					
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
-						long time = mClockView.getClockTime();
-						alertItemView.AddClock(time);
-					}
-				}).setNegativeButton(R.string.dialog_cancel, null).create();
-		mAlertDialog.show();
-		
-	}
-	
 	@Override
 	protected void onPause(){
 		super.onPause();

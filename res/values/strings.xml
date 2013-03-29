@@ -9,10 +9,14 @@
 	<string name="item_menu_clock">Clock</string>
 	<string name="item_menu_color">Color</string>
 	<string name="item_menu_share">Share</string>
+	<string name="note_snippet_info">...</string>
 	<string name="color_ok">OK</string>
 	<string name="select_time">Select time</string>
 	<string name="dialog_ok">OK</string>
 	<string name="dialog_cancel">Cancel</string>
+	<string name="dialog_delete">Delete</string>
 	<string name="clock_calendar">Calendar</string>
 	<string name="clock_time">Time</string>
+	<string name="clock_dialog_go">Go it!</string>
+	<string name="clock_dialog_known">I know it!</string>
 </resources>
