@@ -202,6 +202,7 @@ public class AlertListView extends ListView{
 	
  	private void updateCreateStatus(int y) {
 		// TODO Auto-generated method stub
+ 		this.headView.setRandBgColor();
 		if(!isRecored && firstItemIndex == 0){
 			isRecored = true;
 			startY = y;
