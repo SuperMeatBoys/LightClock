@@ -56,7 +56,7 @@ public class MainView  extends LinearLayout {
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
 			MainView.this.mCurItemView.startEdit(true);
-			MainView.this.mCurItemView.showMenu();
+			MainView.this.mCurItemView.showFastMenu();
 		}
 	};
 	

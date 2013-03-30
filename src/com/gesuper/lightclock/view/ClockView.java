@@ -1,12 +1,12 @@
 package com.gesuper.lightclock.view;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.gesuper.lightclock.R;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -25,18 +25,20 @@ public class ClockView extends LinearLayout {
 	private Button btnTime;
 	private Date time;
 	
-	public ClockView(Context context) {
+	public ClockView(Context context, long alertTime) {
 		super(context);
 		// TODO Auto-generated constructor stub
 		
 		inflate(context, R.layout.activity_clock, this);
+		if(alertTime > 0)
+			this.time = new Date(alertTime);
+		else this.time = new Date();
 		initResource();
 		
 	}
 
 	private void initResource() {
 		// TODO Auto-generated method stub
-		this.time = new Date();
 		this.etCalendar = (EditText)findViewById(R.id.clock_calendar_et);
 		this.btnCalendar = (Button)findViewById(R.id.clock_calendar_btn);
 		
@@ -67,9 +69,8 @@ public class ClockView extends LinearLayout {
 							ClockView.this.time.setYear(-1900 + localDatePicker.getYear());
 							ClockView.this.time.setMonth(localDatePicker.getMonth());
 							ClockView.this.time.setDate(localDatePicker.getDayOfMonth());
-							ClockView.this.etCalendar.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-									ClockView.this.time.getTime(), DateUtils.FORMAT_SHOW_DATE
-					                | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_YEAR));
+							SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+							ClockView.this.etCalendar.setText(mDateFormat.format(ClockView.this.time.getTime()));
 						}
 						
 					}).
@@ -102,9 +103,8 @@ public class ClockView extends LinearLayout {
 							ClockView.this.time.setHours(localTimePicker.getCurrentHour().intValue());
 							ClockView.this.time.setMinutes(localTimePicker.getCurrentMinute().intValue());
 							ClockView.this.time.setSeconds(0);
-				            ClockView.this.etTime.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-				            		ClockView.this.time.getTime(),
-				                    DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_TIME));
+							SimpleDateFormat mDateFormat = new SimpleDateFormat("HH:mm");
+				            ClockView.this.etTime.setText(mDateFormat.format(ClockView.this.time.getTime()));
 				            
 						}
 						
@@ -113,12 +113,11 @@ public class ClockView extends LinearLayout {
 			}
 			
 		});
-		this.etCalendar.setText(DateUtils.formatDateTime(this.getContext(),
-                this.time.getTime(), DateUtils.FORMAT_SHOW_DATE
-                | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_YEAR));
-		this.etTime.setText(DateUtils.formatDateTime(ClockView.this.getContext(),
-                this.time.getTime(),
-                DateUtils.FORMAT_24HOUR | DateUtils.FORMAT_SHOW_TIME));
+		SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		this.etCalendar.setText(mDateFormat.format(this.time.getTime()));
+
+		mDateFormat = new SimpleDateFormat("HH:mm");
+        this.etTime.setText(mDateFormat.format(this.time.getTime()));
 	}
 
 	public long getClockTime(){

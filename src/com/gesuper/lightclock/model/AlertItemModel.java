@@ -151,7 +151,11 @@ public class AlertItemModel {
 	public int getBgColorId(){
 		return Integer.valueOf(this.mBgColorId);
 	}
-	 
+	
+	public void setAlertDate(long alertDate){
+		this.mAlertDate = String.valueOf(alertDate);
+	}
+	
 	public long getAlertDate(){
 		return Long.valueOf(this.mAlertDate);
 	}
@@ -159,7 +163,7 @@ public class AlertItemModel {
 	public long getCreateDate(){
 		return Long.valueOf(this.mCreateDate);
 	}
-	 
+	
 	public long getModifyDate(){
 		return Long.valueOf(this.mModifyDate);
 	}

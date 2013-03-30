@@ -9,7 +9,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone"
         android:background="#FFFFFFFF"
         >
 		
@@ -30,13 +29,11 @@
 	        	android:layout_width="wrap_content"
 	        	android:layout_height="wrap_content"
 	        	android:id="@+id/item_clock"
+		        android:padding="5dp"
 	        	android:orientation="horizontal">
 		        <TextView
 		            android:layout_width="wrap_content"
             		android:layout_height="wrap_content"
-		            android:gravity="center"
-		            android:padding="5dp"
-		            android:paddingRight="2dp"
 		            android:text="@string/item_menu_clock"
 		            android:textSize="15sp" />
 				<TextView
@@ -44,8 +41,6 @@
 		            android:layout_width="wrap_content"
             		android:layout_height="wrap_content"
 		            android:gravity="center"
-		            android:padding="5dp"
-		            android:paddingLeft="0dp"
 		            android:textSize="15sp" />
 			</LinearLayout>
 			

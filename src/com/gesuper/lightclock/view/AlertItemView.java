@@ -1,5 +1,6 @@
 package com.gesuper.lightclock.view;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
@@ -26,7 +27,13 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.MeasureSpec;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.AnimationSet;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -61,6 +68,12 @@ public class AlertItemView extends LinearLayout {
 	
 	private InputMethodManager inputManager;
 	private ResizeListener resizeListener;
+	private int mMenuHeight;
+	private Handler mMenuAnimationHandler = new Handler(){
+		public void handleMessage(Message message){
+			AlertItemView.this.mMenu.setPadding(0, message.what, 0, 0);
+		}
+	};
 	
 	private Handler mRemoveMenuBackgroundColor = new Handler(){
 		public void handleMessage(Message message){
@@ -168,6 +181,9 @@ public class AlertItemView extends LinearLayout {
 		});
 		
 		this.mMenu = (LinearLayout)findViewById(R.id.item_menu);
+		this.measureView(this.mMenu);
+		this.mMenuHeight = this.mMenu.getMeasuredHeight();
+		this.mMenu.setPadding(0, -this.mMenuHeight, 0, 0);
 		this.mModifyTime = (TextView)findViewById(R.id.item_modify_time);
 		this.mClock = (LinearLayout)findViewById(R.id.item_clock);
 		this.mClockTime= (TextView)findViewById(R.id.item_clock_time); 
@@ -222,13 +238,12 @@ public class AlertItemView extends LinearLayout {
 		
 		this.changeBgColor(this.mItemModel.getBgColorId());
 
-		this.mModifyTime.setText(DateUtils.formatDateTime(this.getContext(),
-                this.mItemModel.getModifyDate(), DateUtils.FORMAT_SHOW_DATE
-                | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
-                | DateUtils.FORMAT_SHOW_YEAR));
+		this.mModifyTime.setText(this.getFormatTime(this.mItemModel.getModifyDate()));
 		
 		if(this.mItemModel.getAlertDate() > 0){
-			this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
+			if(this.mItemModel.getAlertDate() > System.currentTimeMillis())
+				this.mClockTime.setText(this.getFormatTime(this.mItemModel.getAlertDate()));
+			else this.mClockTime.setText(R.string.item_menu_clock_passed);
 		}
 	}
 	
@@ -275,13 +290,44 @@ public class AlertItemView extends LinearLayout {
 		this.status = STATUS_NORMAL;
 	}
 	
+	public void showFastMenu(){
+		if(AlertItemView.this.mMenuHeight == 0){
+        	AlertItemView.this.mMenuHeight = AlertItemView.this.mMenu.getHeight();
+        }
+		this.mMenu.setPadding(0, 0, 0, 0);
+	}
+	
 	public void showMenu(){
-		this.mMenu.setVisibility(View.VISIBLE);
+        if(AlertItemView.this.mMenuHeight == 0){
+        	AlertItemView.this.mMenuHeight = AlertItemView.this.mMenu.getHeight();
+        }
+        new Thread(){
+        	public void run(){
+        		int paddingTop = -AlertItemView.this.mMenuHeight + 16;
+        		while(paddingTop <= 0){
+        			AlertItemView.this.mMenuAnimationHandler.sendEmptyMessageDelayed(paddingTop, (AlertItemView.this.mMenuHeight + paddingTop));
+        			paddingTop += 16;
+        		}
+        		AlertItemView.this.mMenuAnimationHandler.sendEmptyMessageDelayed(0, (AlertItemView.this.mMenuHeight));
+        	}
+        }.start();
+        //this.mMenuAnimationHandler.sendEmptyMessageDelayed(0, 200L);
+        //AlertItemView.this.mMenu.startAnimation(mAnimationSet);
 	}
 	
 	public void hideMenu(){
-		this.mMenu.setVisibility(View.GONE);
-		
+		//this.mMenuAnimationHandler.sendEmptyMessageDelayed(1, 300L);
+		new Thread(){
+        	public void run(){
+        		int paddingTop = 16; 
+        		while(paddingTop <  AlertItemView.this.mMenuHeight){
+        			AlertItemView.this.mMenuAnimationHandler.sendEmptyMessageDelayed(-paddingTop, paddingTop);
+        			paddingTop += 16;
+        		}
+
+            	AlertItemView.this.mMenuAnimationHandler.sendEmptyMessageDelayed(-AlertItemView.this.mMenuHeight, AlertItemView.this.mMenuHeight);
+        	}
+        }.start();
 		this.status = STATUS_NORMAL;
 	}
 	
@@ -296,8 +342,7 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	public void AddClockMenu(){
-		this.mMenu.setVisibility(View.GONE);
-		final ClockView mClockView = new ClockView(this.getContext());
+		final ClockView mClockView = new ClockView(this.getContext(), this.mItemModel.getAlertDate());
 		
 		Builder mAlertDialog = new AlertDialog.Builder(this.getContext()).
 				setTitle(R.string.select_time).
@@ -335,6 +380,7 @@ public class AlertItemView extends LinearLayout {
 		
 		Intent intent = new Intent(this.getContext(), ClockReceiver.class);
 		Bundle bundle = new Bundle();
+		Log.d("TAG", "set clock: " + this.mItemModel.getId());
 		bundle.putLong("com.gesuper.lightclock.ALERT_ID", this.mItemModel.getId());
 		intent.putExtras(bundle);
 		
@@ -343,8 +389,10 @@ public class AlertItemView extends LinearLayout {
         AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
         //设置闹钟
         am.set(AlarmManager.RTC_WAKEUP, alertTime, pendingIntent);
-        
-        this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
+        this.mItemModel.setAlertDate(alertTime);
+        if(this.mItemModel.getAlertDate() > System.currentTimeMillis())
+			this.mClockTime.setText(this.getFormatTime(this.mItemModel.getAlertDate()));
+		else this.mClockTime.setText(R.string.item_menu_clock_passed);
 	}
 
 	protected void deleteClock() {
@@ -401,7 +449,18 @@ public class AlertItemView extends LinearLayout {
 		}
 		
 		this.mItemModel.setBgColorId(colorId);
+		this.updateBgColor();
 		this.mContent.setBackgroundColor(color);
+	}
+	
+	public void updateBgColor(){
+		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
+		ContentValues cv = new ContentValues();
+		cv.put(AlertItemModel.BG_COLOR_ID, this.mItemModel.getBgColorId());
+		dbHelper.update(cv, 
+				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
+				null);
+		dbHelper.close();
 	}
 	
 	public void updateSequence(){
@@ -488,24 +547,45 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	@SuppressWarnings("deprecation")
-	private String getFormatClockTime(long clockTime) {
+	private String getFormatTime(long time) {
 		// TODO Auto-generated method stub
-		Date dateClock = new Date(clockTime);
+		Date dateClock = new Date(time);
 		Date dateNow = new Date();
-		String format = "";
-		if(dateClock.getYear() > dateNow.getYear()){
-			format += String.valueOf(dateClock.getYear()) + "-";
-			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		SimpleDateFormat mDateFormat;
+		if(dateClock.getYear() > dateNow.getYear() || dateClock.getYear() < dateNow.getYear()){
+			mDateFormat = new SimpleDateFormat(" yy-MM-dd");
 		}
-		else if(dateClock.getMonth() > dateNow.getMonth() || dateClock.getDate() > dateNow.getDate())
-			format = "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
-		else if(dateClock.getMonth() == dateNow.getMonth() && dateClock.getDate() == dateNow.getDate())
-			format = "" + dateClock.getHours() + ":" + dateClock.getMinutes();
+		else if(dateClock.getMonth() > dateNow.getMonth() || dateClock.getDate() > dateNow.getDate()){
+			mDateFormat = new SimpleDateFormat(" MM-dd");
+		}
+		else if(dateClock.getMonth() == dateNow.getMonth() && dateClock.getDate() == dateNow.getDate()){
+			mDateFormat = new SimpleDateFormat(" HH:mm");
+		}
 		else {
-			if(dateClock.getYear() < dateNow.getYear())
-				format += String.valueOf(dateClock.getYear()) + "-";
-			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+			mDateFormat = new SimpleDateFormat(" MM-dd"); 
 		}
-		return format;
+
+		return mDateFormat.format(time);
+	}
+	
+	public int getMenuHeight(){
+		return this.mMenuHeight;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void measureView(View child){
+		ViewGroup.LayoutParams p = child.getLayoutParams();
+		if(p == null){
+			p = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);  
+		}
+		int childWidthSpec = ViewGroup.getChildMeasureSpec(0, 0, p.width);
+		int lpHeight = p.height;
+		int childHeightSpec;
+		if(lpHeight > 0){
+			childHeightSpec = MeasureSpec.makeMeasureSpec(lpHeight, MeasureSpec.EXACTLY);
+		}else {
+			childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+		}
+		child.measure(childWidthSpec, childHeightSpec);
 	}
 }

@@ -7,7 +7,10 @@
     <uses-sdk
         android:minSdkVersion="11"
         android:targetSdkVersion="16" />
-
+	<!-- 设置手机震动权限 -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -25,7 +28,6 @@
         </activity>
 		<activity 
             android:name=".activity.ClockAlertActivity"
-            android:launchMode="singleInstance"
             android:theme="@android:style/Theme.Dialog">   
         </activity>
         <receiver android:name=".activity.ClockReceiver" android:process=":remote"/>

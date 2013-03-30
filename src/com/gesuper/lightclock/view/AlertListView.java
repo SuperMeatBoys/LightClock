@@ -86,13 +86,13 @@ public class AlertListView extends ListView{
 		
 		headView = new AlertItemView(this.getContext());
 		headView.setModel(mItemModel);
-		headView.showMenu();
+		headView.showFastMenu();
 		mTextView = (TextView)headView.findViewById(R.id.tv_content);
 		this.measureView(headView);
-		this.headContentHeight = this.headView.getMeasuredHeight();
+		this.headContentHeight = this.headView.getMeasuredHeight() + this.headView.getMenuHeight();
 		Log.d(TAG, "headContentHeight" + this.headContentHeight);
-		this.headView.setPadding(0, -1 * this.headContentHeight, 0, 0);
-		this.headView.invalidate();
+		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
+		//this.headView.invalidate();
 		this.addHeaderView(headView);
 		
 		this.setOnItemLongClickListener(new OnItemLongClickListener(){
@@ -133,6 +133,8 @@ public class AlertListView extends ListView{
 	 		x = (int)event.getX();
 	 		y = (int)event.getY();
 	 		startY = y;
+	 		Log.i(TAG, "set rand bg color for head view");
+	 		this.headView.setRandBgColor();
 	 		final int k = AlertListView.this.pointToPosition(x, y);
 	 		if( k == ListView.INVALID_POSITION ){
 	 			break;
@@ -150,7 +152,6 @@ public class AlertListView extends ListView{
 	 			mLowerBound = Math.max(y + mTouchSlop, height * 2 / 3);
 	 			mDragCurrentPostion = k;
 	 		}
-	 		this.headView.setRandBgColor();
 	 		break;
 	 	case MotionEvent.ACTION_UP:
 	 		Log.i(TAG, "ACTION UP");
@@ -182,13 +183,11 @@ public class AlertListView extends ListView{
 	 		break;
 	 	case MotionEvent.ACTION_CANCEL:
 	 	case MotionEvent.ACTION_MOVE:
-	 		Log.i(TAG, "ACTION MOVE");
 	 		y = (int) event.getY();
 	 		if(this.status == SEQUENCE){
 	 			dragView(y);
 	 			adjustScrollBounds(y);
 	 			if(y > this.getHeight()){
-	 				Log.d(TAG, "MOVE y: " + y + " height:" + this.getHeight());
 	 				this.mMainView.updateDeleteColor(true);
 	 			} else this.mMainView.updateDeleteColor(false);
 	 			
@@ -203,7 +202,6 @@ public class AlertListView extends ListView{
 	
  	private void updateCreateStatus(int y) {
 		// TODO Auto-generated method stub
- 		this.headView.setRandBgColor();
 		if(!isRecored && firstItemIndex == 0){
 			isRecored = true;
 			startY = y;

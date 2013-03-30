@@ -18,6 +18,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Window;
@@ -27,7 +28,8 @@ public class ClockAlertActivity extends Activity implements OnDismissListener {
 	private int mNoteId;
     private String mSnippet;
     private static final int SNIPPET_PREW_MAX_LEN = 60;
-    MediaPlayer mPlayer;
+    private MediaPlayer mPlayer;
+    private Vibrator mVibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class ClockAlertActivity extends Activity implements OnDismissListener {
 
         try {
             //mNoteId = Long.valueOf(intent.getData().getPathSegments().get(1));
-        	mNoteId = bundle.getInt("com.gesuper.lightclock.ALERT_ID");
+        	mNoteId = (int) bundle.getLong("com.gesuper.lightclock.ALERT_ID");
             mSnippet = this.getContentById(mNoteId);
             mSnippet = mSnippet.length() > SNIPPET_PREW_MAX_LEN ? mSnippet.substring(0,
                     SNIPPET_PREW_MAX_LEN) + getResources().getString(R.string.note_snippet_info)
@@ -57,16 +59,17 @@ public class ClockAlertActivity extends Activity implements OnDismissListener {
             e.printStackTrace();
             return;
         }
-
+        this.mVibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
         mPlayer = new MediaPlayer();
         this.showActionDialog();
         //this.playAlarmSound();
-        
+        if(this.mVibrator.hasVibrator())
+        	this.mVibrator.vibrate(new long[]{1000L, 1000L, 1000L, 1000L}, 0);
     }
     
     private String getContentById(int id){
     	DBHelperModel dbHelper = new DBHelperModel(this);
-    	Log.d("TAG", "" + id);
+    	Log.d("TAG", "alert id: " + id);
     	Cursor cursor = dbHelper.query(new String[]{AlertItemModel.CONTENT}, AlertItemModel.ID + " = " + id, null, null);
     	cursor.moveToFirst();
     	String content = cursor.getString(0);
@@ -115,12 +118,12 @@ public class ClockAlertActivity extends Activity implements OnDismissListener {
         dialog.setMessage(mSnippet);
         
         dialog.setPositiveButton(R.string.dialog_ok, null);
-
-        dialog.show();
+        dialog.show().setOnDismissListener(this);
     }
 
     public void onDismiss(DialogInterface dialog) {
         stopAlarmSound();
+        this.mVibrator.cancel();
         finish();
     }
 
