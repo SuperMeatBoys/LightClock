@@ -23,7 +23,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+		<activity 
+            android:name=".activity.ClockAlertActivity"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Dialog">   
+        </activity>
+        <receiver android:name=".activity.ClockReceiver" android:process=":remote"/>
     </application>                                                            
 
 </manifest>

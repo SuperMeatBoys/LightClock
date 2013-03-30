@@ -7,10 +7,16 @@ import com.gesuper.lightclock.activity.*;
 import com.gesuper.lightclock.R;
 import com.gesuper.lightclock.model.*;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
@@ -48,7 +54,8 @@ public class AlertItemView extends LinearLayout {
 	
 	private LinearLayout mMenu;
 	private TextView mModifyTime;
-	private TextView mClock;
+	private LinearLayout mClock;
+	private TextView mClockTime;
 	private TextView mShare;
 	private TextView mColor;
 	
@@ -162,7 +169,8 @@ public class AlertItemView extends LinearLayout {
 		
 		this.mMenu = (LinearLayout)findViewById(R.id.item_menu);
 		this.mModifyTime = (TextView)findViewById(R.id.item_modify_time);
-		this.mClock = (TextView)findViewById(R.id.item_clock);
+		this.mClock = (LinearLayout)findViewById(R.id.item_clock);
+		this.mClockTime= (TextView)findViewById(R.id.item_clock_time); 
 		this.mShare = (TextView)findViewById(R.id.item_share);
 		this.mColor = (TextView)findViewById(R.id.item_color);
 		
@@ -205,6 +213,7 @@ public class AlertItemView extends LinearLayout {
 		
 	}
 
+
 	public void setModel(AlertItemModel itemModel){
 
 		this.mItemModel = itemModel;
@@ -217,6 +226,10 @@ public class AlertItemView extends LinearLayout {
                 this.mItemModel.getModifyDate(), DateUtils.FORMAT_SHOW_DATE
                 | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
                 | DateUtils.FORMAT_SHOW_YEAR));
+		
+		if(this.mItemModel.getAlertDate() > 0){
+			this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
+		}
 	}
 	
 	public void startEdit(boolean isCreate){
@@ -262,13 +275,6 @@ public class AlertItemView extends LinearLayout {
 		this.status = STATUS_NORMAL;
 	}
 	
-	public static void addTestItem(Context context){
-		AlertItemModel model = new AlertItemModel();
-		model.setContent("That's the final one, thanks!");
-		DBHelperModel dbHelper = new DBHelperModel(context);
-		Long id = dbHelper.insert(model.formatContentValuesWithoutId());
-	}
-	
 	public void showMenu(){
 		this.mMenu.setVisibility(View.VISIBLE);
 	}
@@ -291,18 +297,78 @@ public class AlertItemView extends LinearLayout {
 	
 	public void AddClockMenu(){
 		this.mMenu.setVisibility(View.GONE);
-		this.mMainView.setPopupDismiss();
-		((MainActivity) this.getContext()).getClockTime(this);
+		final ClockView mClockView = new ClockView(this.getContext());
+		
+		Builder mAlertDialog = new AlertDialog.Builder(this.getContext()).
+				setTitle(R.string.select_time).
+				setView(mClockView).
+				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						long time = mClockView.getClockTime();
+						AddClockFunction(time);
+					}
+				}).setNegativeButton(R.string.dialog_cancel, null);
+		if(this.mItemModel.getAlertDate() > 0){
+			mAlertDialog.setNeutralButton(R.string.dialog_delete, new DialogInterface.OnClickListener() {
+				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					AlertItemView.this.deleteClock();
+				}
+			});
+		}
+		mAlertDialog.show();
 	}
 	
-	public void AddClock(long alertTime){
-		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
+	public void AddClockFunction(long alertTime){
+		DBHelperModel dbHelper = new DBHelperModel(this.getContext());
 		ContentValues cv = new ContentValues();
 		cv.put(AlertItemModel.ALERT_DATE, alertTime);
 		dbHelper.update(cv, 
-				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
+				AlertItemModel.ID + " = " + this.mItemModel.getId(), 
 				null);
 		dbHelper.close();
+		
+		Intent intent = new Intent(this.getContext(), ClockReceiver.class);
+		Bundle bundle = new Bundle();
+		bundle.putLong("com.gesuper.lightclock.ALERT_ID", this.mItemModel.getId());
+		intent.putExtras(bundle);
+		
+		//intent.setDataAndType(ContentUris.withAppendedId(Notes.CONTENT_NOTE_URI, mClockModel.getId()));
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getContext(), 0, intent, 0);
+        AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
+        //设置闹钟
+        am.set(AlarmManager.RTC_WAKEUP, alertTime, pendingIntent);
+        
+        this.mClockTime.setText(getFormatClockTime(this.mItemModel.getAlertDate()));
+	}
+
+	protected void deleteClock() {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(this.getContext(), ClockReceiver.class);
+		Bundle bundle = new Bundle();
+		bundle.putLong("com.gesuper.lightclock.ALERT_ID", this.mItemModel.getId());
+		intent.putExtras(bundle);
+		
+		//intent.setDataAndType(ContentUris.withAppendedId(Notes.CONTENT_NOTE_URI, mClockModel.getId()));
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getContext(), 0, intent, 0);
+        AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
+        
+        am.cancel(pendingIntent);
+        
+        DBHelperModel dbHelper = new DBHelperModel(this.getContext());
+		ContentValues cv = new ContentValues();
+		cv.put(AlertItemModel.ALERT_DATE, 0);
+		dbHelper.update(cv, 
+				AlertItemModel.ID + " = " + this.mItemModel.getId(), 
+				null);
+		dbHelper.close();
+
+		this.mClockTime.setText("");
 	}
 	
 	public void shareContent(){
@@ -419,5 +485,27 @@ public class AlertItemView extends LinearLayout {
 	public void setStatusNormal() {
 		// TODO Auto-generated method stub
 		this.status = STATUS_NORMAL;
+	}
+	
+	@SuppressWarnings("deprecation")
+	private String getFormatClockTime(long clockTime) {
+		// TODO Auto-generated method stub
+		Date dateClock = new Date(clockTime);
+		Date dateNow = new Date();
+		String format = "";
+		if(dateClock.getYear() > dateNow.getYear()){
+			format += String.valueOf(dateClock.getYear()) + "-";
+			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		}
+		else if(dateClock.getMonth() > dateNow.getMonth() || dateClock.getDate() > dateNow.getDate())
+			format = "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		else if(dateClock.getMonth() == dateNow.getMonth() && dateClock.getDate() == dateNow.getDate())
+			format = "" + dateClock.getHours() + ":" + dateClock.getMinutes();
+		else {
+			if(dateClock.getYear() < dateNow.getYear())
+				format += String.valueOf(dateClock.getYear()) + "-";
+			format += "" + (dateClock.getMonth()+1) + "-" + dateClock.getDate();
+		}
+		return format;
 	}
 }
