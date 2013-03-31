@@ -56,57 +56,23 @@ public class MainView  extends LinearLayout {
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
 			MainView.this.mCurItemView.startEdit(true);
-			MainView.this.mCurItemView.showFastMenu();
 		}
 	};
 	
 	private Handler removeHandler = new Handler(){
 		
 		public void handleMessage(Message message){
-			final int position = message.what;
-			if(position < 0 || position > MainView.this.mListView.getCount() || MainView.this.mListView.getCount() == 0)
-				return ;
-			MainView.this.mCurItemView = 
-					(AlertItemView) MainView.this.mListView.getItemAt(
-							position - MainView.this.mListView.getFirstVisiblePosition()
-					);
-			if(MainView.this.mCurItemView != null){
-				AnimationSet mAnimationSet = new AnimationSet(true);
-				AlphaAnimation mAlphaAnimation = new AlphaAnimation(1.0F, 0.0F);
-		        TranslateAnimation mTranslateAnimation = new TranslateAnimation(0.0F, 0.0F, 0.0F, -MainView.this.mCurItemView.getHeight());
-		        mAnimationSet.addAnimation(mAlphaAnimation);
-		        mAnimationSet.addAnimation(mTranslateAnimation);
-		        mAnimationSet.setDuration(300L);
-		        mAnimationSet.setAnimationListener(new AnimationListener(){
-
-					@Override
-					public void onAnimationStart(Animation animation) {
-						// TODO Auto-generated method stub
-						
-					}
-
-					@Override
-					public void onAnimationEnd(Animation animation) {
-						// TODO Auto-generated method stub
-						InputMethodManager inputManager =
-				                (InputMethodManager)MainView.this.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-						inputManager.hideSoftInputFromWindow(
-								MainView.this.mListView.getWindowToken(), 0);
-						MainView.this.mCurItemView.hideMenu();
-						MainView.this.mCurItemView.setStatusNormal();
-						MainView.this.mAdapter.remove(MainView.this.mCurItemView.getModel());
-					}
-
-					@Override
-					public void onAnimationRepeat(Animation animation) {
-						// TODO Auto-generated method stub
-						
-					}
-		        	
-		        });
-		        Log.d(TAG, "start create animation");
-		        MainView.this.mCurItemView.startAnimation(mAnimationSet);
-			}
+			MainView.this.mCurItemView.hideFastMenu();
+			MainView.this.mCurItemView.setStatusNormal();
+			MainView.this.mCurItemView.setPadding(0, 0, 0, 0);
+			MainView.this.mAdapter.remove(MainView.this.mCurItemView.getModel());
+		}
+	};
+	
+	private Handler removeAnimationHandler = new Handler(){
+		
+		public void handleMessage(Message message){
+			MainView.this.mCurItemView.setPadding(0, message.what, 0, 0);
 		}
 	};
 	
@@ -187,13 +153,10 @@ public class MainView  extends LinearLayout {
 	}
 	
 	public boolean addNewItem(int bgColorId){
-		Log.d(TAG, "new items created !");
-
 		AlertItemModel mItemModel = new AlertItemModel();
 		mItemModel.setBgColorId(bgColorId);
-		this.createHandler.sendEmptyMessageDelayed(0, 300);
 		this.mAdapter.insert(mItemModel, 0);
-		
+		this.createHandler.sendEmptyMessageDelayed(0, 300);
 		this.requestFocus();
 		return true;
 	}
@@ -216,7 +179,6 @@ public class MainView  extends LinearLayout {
 					this.mCurItemView.getHeight() + mPositionItem[1] - mPositionScreen[1]);
 		TopRectView mTopView= new TopRectView(this.mContext);
 		
-		Log.d(TAG, "height: " + this.mCurItemView.getHeight());
 		mTopView.setOnTouchListener(new OnTouchListener(){
 
 			@Override
@@ -242,7 +204,6 @@ public class MainView  extends LinearLayout {
 		this.mPopView.setBackgroundDrawable(null);
 		this.mPopView.setWidth(mRectTop.width());
 		this.mPopView.setHeight(mRectTop.height());
-		Log.d(TAG, "width: "+mRectTop.width() + ", " + mRectTop.height());
 		this.mPopView.showAtLocation(this, Gravity.NO_GRAVITY, 0, mPositionScreen[1]);
 		
 		this.mPopView.setOnDismissListener(new OnDismissListener(){
@@ -253,7 +214,21 @@ public class MainView  extends LinearLayout {
 				if(MainView.this.mCurItemView != null){
 					if(MainView.this.mCurItemView.getStatus() == AlertItemView.STATUS_CREATE 
 							&& MainView.this.mCurItemView.getContent().equals("")){
-						MainView.this.removeHandler.sendEmptyMessageDelayed(position, 200L);
+						InputMethodManager inputManager =
+				                (InputMethodManager)MainView.this.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+						inputManager.hideSoftInputFromWindow(
+								MainView.this.mListView.getWindowToken(), 0);
+						new Thread(){
+				        	public void run(){
+				        		int paddingTop = 16; 
+				        		while(paddingTop < MainView.this.mCurItemView.getHeight()){
+				        			MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-paddingTop, paddingTop);
+				        			paddingTop += 16;
+				        		}
+				        		MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-MainView.this.mCurItemView.getHeight(), MainView.this.mCurItemView.getHeight());
+				        		MainView.this.removeHandler.sendEmptyMessageDelayed(0, 200L);
+				        	}
+				        }.start();
 					}
 					else {
 						MainView.this.mCurItemView.endEdit();
@@ -379,6 +354,4 @@ public class MainView  extends LinearLayout {
 		this.saveSequence();
 		this.mAdapter.notifyDataSetChanged();
 	}
-	
-	
 }

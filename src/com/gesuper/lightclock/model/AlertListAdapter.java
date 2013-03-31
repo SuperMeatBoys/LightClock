@@ -24,13 +24,17 @@ public class AlertListAdapter extends ArrayAdapter<AlertItemModel> {
 		AlertItemView mItemView;
 		if (convertView != null) {
 			mItemView = (AlertItemView)convertView;
+			Log.d(TAG, "old");
 		}
-		else mItemView  = new AlertItemView(this.getContext());
+		else {
+			mItemView  = new AlertItemView(this.getContext());
+		}
 		AlertItemModel mItemModel = getItem(position);
 		mItemView.setModel(mItemModel);
-		Log.d(TAG, "get view " + position + " id: " + mItemModel.getId());
-		if(mItemModel.getId() == -1){
-			mItemView.showMenu();
+		Log.d(TAG, "position:" + position + " content:" + mItemView.getContent());
+		if(mItemView.getModel().getId() == -1){
+			mItemView.showFastMenu();
+			Log.d(TAG, "show menu:" + mItemView.getContent());
 		}
         return mItemView;
 	}

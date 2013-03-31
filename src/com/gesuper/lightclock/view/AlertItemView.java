@@ -253,8 +253,8 @@ public class AlertItemView extends LinearLayout {
 		if(isCreate)
 			this.status = STATUS_CREATE;
 		else this.status = STATUS_EDIT;
-		this.mTextView.setVisibility(View.GONE);
 		this.mEditText.setVisibility(View.VISIBLE);
+		this.mTextView.setVisibility(View.GONE);
 		Log.d(TAG, "edit content: "+this.mItemModel.getContent() );
 		this.mEditText.setSelection(this.mEditText.getEditableText().length());
 		this.mEditText.requestFocus();
@@ -264,8 +264,8 @@ public class AlertItemView extends LinearLayout {
 	
 	public void endEdit(){
 		this.mTextView.setText(this.mItemModel.getContent());
-		this.mEditText.setVisibility(View.GONE);
 		this.mTextView.setVisibility(View.VISIBLE);
+		this.mEditText.setVisibility(View.GONE);
 		this.resizeListener = null;
 		inputManager.hideSoftInputFromWindow(this.mEditText.getWindowToken(), 0);
 		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
@@ -315,8 +315,12 @@ public class AlertItemView extends LinearLayout {
         //AlertItemView.this.mMenu.startAnimation(mAnimationSet);
 	}
 	
+	public void hideFastMenu(){
+		
+		this.mMenu.setPadding(0, -this.mMenuHeight, 0, 0);
+	}
+	
 	public void hideMenu(){
-		//this.mMenuAnimationHandler.sendEmptyMessageDelayed(1, 300L);
 		new Thread(){
         	public void run(){
         		int paddingTop = 16; 

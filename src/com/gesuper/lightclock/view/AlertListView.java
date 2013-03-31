@@ -33,8 +33,7 @@ public class AlertListView extends ListView{
 	public static final int SEQUENCE = 4;
 	
 	private MainView mMainView;
-	private GestureDetector mSimpleGesture;
-	private boolean isRecored;
+	private int recored;
 	private int firstItemIndex;
 	private int startY;
 	private int status;
@@ -75,7 +74,7 @@ public class AlertListView extends ListView{
 	private void initResource(){
 		//hide scroll bar
 		this.setVerticalScrollBarEnabled(true);
-		this.isRecored = false;
+		this.recored = 1;
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
 		this.mDragItemView = null;
@@ -103,24 +102,17 @@ public class AlertListView extends ListView{
 				// TODO Auto-generated method stub
 				Log.i(TAG, "on item long click " + position);
 				status = SEQUENCE;
-				View itemContent = view.findViewById(R.id.alert_content);
+				View v = AlertListView.this.getChildAt(position);
+				View itemContent = v.findViewById(R.id.alert_content);
 				itemContent.setDrawingCacheEnabled(true);
 				Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
-				startDrag(bitmap, mDragPointY + view.getTop());
+				startDrag(bitmap, mDragPointY + v.getTop());
 				//view.setVisibility(View.INVISIBLE);
 				return false;
 			}
 			
 		});
 		
-	}
-	
-	
-
-	private void createNewAlert() {
-		// TODO Auto-generated method stub
-		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
-		this.mMainView.addNewItem(this.headView.getModel().getBgColorId());
 	}
 
 	@Override
@@ -135,6 +127,11 @@ public class AlertListView extends ListView{
 	 		startY = y;
 	 		Log.i(TAG, "set rand bg color for head view");
 	 		this.headView.setRandBgColor();
+	 		Log.d(TAG, "" + this.getFirstVisiblePosition());
+			if(this.getFirstVisiblePosition() == 0){
+				recored += 1;
+				startY = y;
+			}
 	 		final int k = AlertListView.this.pointToPosition(x, y);
 	 		if( k == ListView.INVALID_POSITION ){
 	 			break;
@@ -166,7 +163,6 @@ public class AlertListView extends ListView{
 	 			}
 	 			stopDrag();
  				this.mDragStartPosition = -1;
-				this.mMainView.refreshAdapter();
 	 			this.status = CREATE_REFRESH_DONE;
 	 		} else if(this.status != NORMAL){
 	 			if(status == CREATE_RELEASE_UP){
@@ -178,12 +174,15 @@ public class AlertListView extends ListView{
 	 				changeHeaderViewByStatus();
 	 				this.headView.setPadding(0, -this.headContentHeight, 0, 0);
 	 			}
-	 			isRecored = false;
 	 		}
+ 			recored = 1;
 	 		break;
 	 	case MotionEvent.ACTION_CANCEL:
 	 	case MotionEvent.ACTION_MOVE:
 	 		y = (int) event.getY();
+	 		if(this.getFirstVisiblePosition() > 1){
+	 			this.recored = -1;
+	 		}
 	 		if(this.status == SEQUENCE){
 	 			dragView(y);
 	 			adjustScrollBounds(y);
@@ -191,7 +190,7 @@ public class AlertListView extends ListView{
 	 				this.mMainView.updateDeleteColor(true);
 	 			} else this.mMainView.updateDeleteColor(false);
 	 			
-	 		} else if(this.status != NORMAL){
+	 		} else if(this.status != NORMAL && this.recored > 0){
 	 			updateCreateStatus(y);
 			
 	 		}
@@ -202,11 +201,6 @@ public class AlertListView extends ListView{
 	
  	private void updateCreateStatus(int y) {
 		// TODO Auto-generated method stub
-		if(!isRecored && firstItemIndex == 0){
-			isRecored = true;
-			startY = y;
-		}
-		Log.d(TAG, "startY: " + startY + "  y: "+ y);
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);
 			if(y-startY < 0){
@@ -249,17 +243,23 @@ public class AlertListView extends ListView{
 		switch(status){
 		case CREATE_PULL_DOWN:
 			this.mTextView.setHint("pull down to create");
-			this.RATIO = 1;
+			this.RATIO = 2;
 			break;
 		case CREATE_RELEASE_UP:
 			this.RATIO = 4;
 			this.mTextView.setHint("release to create");
 			break;
 		case CREATE_REFRESH_DONE:
-			this.RATIO = 1;
+			this.RATIO = 2;
 			this.mTextView.setHint("click to edit");
 			break;
 		}
+	}
+	
+	private void createNewAlert() {
+		// TODO Auto-generated method stub
+		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
+		this.mMainView.addNewItem(this.headView.getModel().getBgColorId());
 	}
 	
 	public View getItemAt(int index){
@@ -332,8 +332,7 @@ public class AlertListView extends ListView{
 	public void stopDrag(){
 		this.mMainView.setDeleteVisible(false);
 		if (mDragView != null) {
-            WindowManager wm = (WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE);
-            wm.removeView(mDragView);
+            mWindowManager.removeView(mDragView);
             mDragView.setImageDrawable(null);
             mDragView = null;
         }
@@ -374,11 +373,10 @@ public class AlertListView extends ListView{
 		this.mMainView = mainView;
 	}
 	
-	public void onItemClicked(int position){
-	}
-	
 	public boolean isRecored(){
-		return this.isRecored;
+		if(this.status == CREATE_REFRESH_DONE)
+			return false;
+		return true;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -396,70 +394,6 @@ public class AlertListView extends ListView{
 			childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 		}
 		child.measure(childWidthSpec, childHeightSpec);
-	}
-	
-	class SimpleGesture extends SimpleOnGestureListener {
-		public boolean onSingleTapUp(MotionEvent e) {
-			// TODO Auto-generated method stub
-			Log.d(TAG, "on single tap up");
-            return false;
-        }
-
-        public void onLongPress(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on long press");
-        }
-
-        public boolean onScroll(MotionEvent e1, MotionEvent e2,
-                float distanceX, float distanceY) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on scroll x:" + distanceX + " y:" + distanceY);
-            return false;
-        }
-
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                float velocityY) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on Fling x:" + velocityX + " y:" + velocityY);
-            return false;
-        }
-
-        public void onShowPress(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "show press");
-        }
-
-        public boolean onDown(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on down");
-            return false;
-        }
-
-        public boolean onDoubleTap(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on double tap");
-            return false;
-        }
-        
-        public boolean onDoubleTapEvent(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on double tap event");
-            return false;
-        }
-        
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-        	// TODO Auto-generated method stub
-        	Log.d(TAG, "on single tap confirmed");
-        	int position = AlertListView.this.pointToPosition((int)e.getX(), (int)e.getY());
-        	if( position == ListView.INVALID_POSITION ){
-        		return false;
-        	}
-    		AlertItemView itemView = (AlertItemView) AlertListView.this.getChildAt
-    				(position - AlertListView.this.getFirstVisiblePosition());
-    		AlertListView.this.mMainView.onItemClicked(position, itemView);
-            return false;
-        }
 	}
 
 }
