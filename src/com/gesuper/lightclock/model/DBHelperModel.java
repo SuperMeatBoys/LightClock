@@ -34,11 +34,20 @@ public class DBHelperModel extends SQLiteOpenHelper{
 	
 	private SQLiteDatabase db;
 	
+	public static DBHelperModel instance;
+	
 	public DBHelperModel(Context context){
 		super(context, DB_NAME, null, DB_VERSION);
 		this.db = this.getWritableDatabase();
 	}
 
+	public static DBHelperModel getInstance(Context context){
+		if(instance == null){
+			instance = new DBHelperModel(context);
+		}
+		return  instance;
+	}
+	
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// TODO Auto-generated method stub

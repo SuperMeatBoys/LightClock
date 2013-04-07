@@ -8,11 +8,11 @@ import com.gesuper.lightclock.activity.*;
 import com.gesuper.lightclock.R;
 import com.gesuper.lightclock.model.*;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.PendingIntent;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,19 +22,11 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.MeasureSpec;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -51,8 +43,8 @@ public class AlertItemView extends LinearLayout {
 	public static final int STATUS_MOVE = 3;
 	public static final int STATUS_CREATE = 4;
 	
-	private MainView mMainView;
 	private AlertItemModel mItemModel;
+	private AlphaAnimation mAlphaAnimation;
 	private int status;
 	
 	private RelativeLayout mContent;
@@ -103,13 +95,11 @@ public class AlertItemView extends LinearLayout {
 	
 	public AlertItemView(Context context){
 		super(context);
-		
-		this.mMainView = (MainView) ((MainActivity)context).getView();
 	    inflate(context, R.layout.activity_alert_item, this);
 	    
 		this.inputManager =
                 (InputMethodManager)this.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-		initResource();
+		this.initResource();
 	}
 	
 	public AlertItemView(Context context, AlertItemModel itemModel){
@@ -157,33 +147,11 @@ public class AlertItemView extends LinearLayout {
 			
 		});
 		
-		this.mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener(){
-
-			@Override
-			public boolean onEditorAction(TextView v, int actionId,
-					KeyEvent event) {
-				// TODO Auto-generated method stub
-				Log.d(TAG, "actionId: " + actionId);
-				switch(actionId){  
-		        case EditorInfo.IME_NULL:  
-		            System.out.println("null for default_content: " + v.getText() );  
-		            break;  
-		        case EditorInfo.IME_ACTION_SEND:  
-		            System.out.println("action send for email_content: "  + v.getText());  
-		            break;  
-		        case EditorInfo.IME_ACTION_DONE:  
-		            System.out.println("action done for number_content: "  + v.getText());  
-		            break;  
-		        }  
-				return true;
-			}
-			
-		});
-		
 		this.mMenu = (LinearLayout)findViewById(R.id.item_menu);
 		this.measureView(this.mMenu);
 		this.mMenuHeight = this.mMenu.getMeasuredHeight();
 		this.mMenu.setPadding(0, -this.mMenuHeight, 0, 0);
+		
 		this.mModifyTime = (TextView)findViewById(R.id.item_modify_time);
 		this.mClock = (LinearLayout)findViewById(R.id.item_clock);
 		this.mClockTime= (TextView)findViewById(R.id.item_clock_time); 
@@ -227,11 +195,14 @@ public class AlertItemView extends LinearLayout {
 			
 		});
 		
+		this.mAlphaAnimation = new AlphaAnimation(1.0F, 0.5F);
+		this.mAlphaAnimation.setDuration(100L);
+		this.mAlphaAnimation.setFillAfter(true);
 	}
 
 
 	public void setModel(AlertItemModel itemModel){
-
+		// TODO Auto-generated method stub
 		this.mItemModel = itemModel;
 		this.mEditText.setText(this.mItemModel.getContent());
 		this.mTextView.setText(this.mItemModel.getShortContentForTextView());
@@ -240,6 +211,10 @@ public class AlertItemView extends LinearLayout {
 
 		this.mModifyTime.setText(this.getFormatTime(this.mItemModel.getModifyDate()));
 		
+		this.setClockTime();
+	}
+	
+	public void setClockTime(){
 		if(this.mItemModel.getAlertDate() > 0){
 			if(this.mItemModel.getAlertDate() > System.currentTimeMillis())
 				this.mClockTime.setText(this.getFormatTime(this.mItemModel.getAlertDate()));
@@ -266,26 +241,14 @@ public class AlertItemView extends LinearLayout {
 		this.mTextView.setText(this.mItemModel.getContent());
 		this.mTextView.setVisibility(View.VISIBLE);
 		this.mEditText.setVisibility(View.GONE);
+		
 		this.resizeListener = null;
-		inputManager.hideSoftInputFromWindow(this.mEditText.getWindowToken(), 0);
-		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
-		Log.d(TAG, ""+this.status);
+		this.inputManager.hideSoftInputFromWindow(this.mEditText.getWindowToken(), 0);
 		if(this.status == STATUS_CREATE){
-			Long id = dbHelper.insert(this.mItemModel.formatContentValuesWithoutId());
-			this.mItemModel.setId(id);
-			Log.d(TAG, "item saved");
+			this.mItemModel.insert();
 		}else if(this.status == STATUS_EDIT){
-			ContentValues cv = new ContentValues();
-			cv.put(AlertItemModel.MODIFY_DATE, new Date().getTime());
-			cv.put(AlertItemModel.SHORT_CONTENT, AlertItemView.this.getShortContent());
-			cv.put(AlertItemModel.CONTENT, AlertItemView.this.mTextView.getText().toString());
-			dbHelper.update(cv, 
-					AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
-					null);
-			Log.d(TAG,"item modified");
-			
+			this.mItemModel.update();
 		}
-		dbHelper.close();
 		this.hideMenu();
 		this.status = STATUS_NORMAL;
 	}
@@ -311,12 +274,9 @@ public class AlertItemView extends LinearLayout {
         		AlertItemView.this.mMenuAnimationHandler.sendEmptyMessageDelayed(0, (AlertItemView.this.mMenuHeight));
         	}
         }.start();
-        //this.mMenuAnimationHandler.sendEmptyMessageDelayed(0, 200L);
-        //AlertItemView.this.mMenu.startAnimation(mAnimationSet);
 	}
 	
 	public void hideFastMenu(){
-		
 		this.mMenu.setPadding(0, -this.mMenuHeight, 0, 0);
 	}
 	
@@ -336,13 +296,7 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	public boolean deleteItem(){
-		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
-		boolean result = dbHelper.delete(
-				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
-					null);
-
-		dbHelper.close();
-		return result;
+		return this.mItemModel.delete();
 	}
 	
 	public void AddClockMenu(){
@@ -374,53 +328,35 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	public void AddClockFunction(long alertTime){
-		DBHelperModel dbHelper = new DBHelperModel(this.getContext());
-		ContentValues cv = new ContentValues();
-		cv.put(AlertItemModel.ALERT_DATE, alertTime);
-		dbHelper.update(cv, 
-				AlertItemModel.ID + " = " + this.mItemModel.getId(), 
-				null);
-		dbHelper.close();
-		
-		Intent intent = new Intent(this.getContext(), ClockReceiver.class);
-		Bundle bundle = new Bundle();
-		Log.d("TAG", "set clock: " + this.mItemModel.getId());
-		bundle.putLong("com.gesuper.lightclock.ALERT_ID", this.mItemModel.getId());
-		intent.putExtras(bundle);
-		
-		//intent.setDataAndType(ContentUris.withAppendedId(Notes.CONTENT_NOTE_URI, mClockModel.getId()));
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getContext(), 0, intent, 0);
+        this.mItemModel.setAlertDate(alertTime);
+        this.mItemModel.update();
+	
         AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
         //设置闹钟
-        am.set(AlarmManager.RTC_WAKEUP, alertTime, pendingIntent);
-        this.mItemModel.setAlertDate(alertTime);
-        if(this.mItemModel.getAlertDate() > System.currentTimeMillis())
-			this.mClockTime.setText(this.getFormatTime(this.mItemModel.getAlertDate()));
-		else this.mClockTime.setText(R.string.item_menu_clock_passed);
+        am.set(AlarmManager.RTC_WAKEUP, alertTime, this.getPendingIntent());
+        
+        this.setClockTime();
 	}
 
 	protected void deleteClock() {
 		// TODO Auto-generated method stub
+        AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
+        
+        am.cancel(this.getPendingIntent());
+        
+        this.mItemModel.deleteClock();
+        
+		this.mClockTime.setText("");
+	}
+	
+	private PendingIntent getPendingIntent(){
 		Intent intent = new Intent(this.getContext(), ClockReceiver.class);
 		Bundle bundle = new Bundle();
 		bundle.putLong("com.gesuper.lightclock.ALERT_ID", this.mItemModel.getId());
 		intent.putExtras(bundle);
 		
 		//intent.setDataAndType(ContentUris.withAppendedId(Notes.CONTENT_NOTE_URI, mClockModel.getId()));
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this.getContext(), 0, intent, 0);
-        AlarmManager am = (AlarmManager) this.getContext().getSystemService(Context.ALARM_SERVICE);
-        
-        am.cancel(pendingIntent);
-        
-        DBHelperModel dbHelper = new DBHelperModel(this.getContext());
-		ContentValues cv = new ContentValues();
-		cv.put(AlertItemModel.ALERT_DATE, 0);
-		dbHelper.update(cv, 
-				AlertItemModel.ID + " = " + this.mItemModel.getId(), 
-				null);
-		dbHelper.close();
-
-		this.mClockTime.setText("");
+        return PendingIntent.getBroadcast(this.getContext(), 0, intent, 0);
 	}
 	
 	public void shareContent(){
@@ -429,10 +365,6 @@ public class AlertItemView extends LinearLayout {
 		intent.putExtra(Intent.EXTRA_TITLE, "Share my alert...");
 		intent.putExtra(Intent.EXTRA_TEXT, "I have a event to share: " + this.mItemModel.getContent() + "\nFrom lightclock");
 		this.getContext().startActivity(Intent.createChooser(intent, "Share"));
-	}
-	
-	public void setBgColor(){
-		this.mMenu.setVisibility(View.GONE);
 	}
 	
 	public void changeBgColor(int colorId){
@@ -453,36 +385,18 @@ public class AlertItemView extends LinearLayout {
 		}
 		
 		this.mItemModel.setBgColorId(colorId);
-		this.updateBgColor();
+		this.mItemModel.update();
+		
 		this.mContent.setBackgroundColor(color);
 	}
 	
-	public void updateBgColor(){
-		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
-		ContentValues cv = new ContentValues();
-		cv.put(AlertItemModel.BG_COLOR_ID, this.mItemModel.getBgColorId());
-		dbHelper.update(cv, 
-				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
-				null);
-		dbHelper.close();
-	}
-	
 	public void updateSequence(){
-		DBHelperModel dbHelper = new DBHelperModel(AlertItemView.this.getContext());
-		ContentValues cv = new ContentValues();
-		cv.put(AlertItemModel.SEQUENCE, this.mItemModel.getSequence());
-		dbHelper.update(cv, 
-				AlertItemModel.ID + " = " + AlertItemView.this.mItemModel.getId(), 
-				null);
-		dbHelper.close();
+		this.mItemModel.update();
 	}
 	
 	public void setTranslucence(boolean isSet){
 		if(isSet){
-			AlphaAnimation localAlphaAnimation = new AlphaAnimation(1.0F, 0.5F);
-			localAlphaAnimation.setDuration(100L);
-		    localAlphaAnimation.setFillAfter(true);
-		    startAnimation(localAlphaAnimation);
+		    startAnimation(this.mAlphaAnimation);
 		    this.status = STATUS_DOWN;
 		}else{
 			this.clearAnimation();
@@ -492,11 +406,6 @@ public class AlertItemView extends LinearLayout {
 	
 	public int getStatus(){
 		return this.status;
-	}
-	
-	private String getShortContent() {
-		// TODO Auto-generated method stub
-		return this.mItemModel.getShortContent();
 	}
 	
 	public String getContent(){
@@ -550,6 +459,7 @@ public class AlertItemView extends LinearLayout {
 		this.status = STATUS_NORMAL;
 	}
 	
+	@SuppressLint("SimpleDateFormat")
 	@SuppressWarnings("deprecation")
 	private String getFormatTime(long time) {
 		// TODO Auto-generated method stub

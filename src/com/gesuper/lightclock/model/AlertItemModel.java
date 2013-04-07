@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Random;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 
 public class AlertItemModel {
@@ -47,6 +48,8 @@ public class AlertItemModel {
 	private static final int VERSION_COLUMN = 8;
 	private static final int SEQUENCE_COLUMN = 9;
 	
+	private Context mContext;
+	private DBHelperModel dbHelper;
 	private String mId;
 	private String mAlertType;
 	private String mBgColorId;
@@ -58,7 +61,9 @@ public class AlertItemModel {
 	private String mVersion;
 	private String mSequence;
 	
-	public AlertItemModel(){
+	public AlertItemModel(Context context){
+		this.mContext = context;
+		this.dbHelper = DBHelperModel.getInstance(this.mContext);
 		Random rand = new Random();
 		this.mId = "-1";
 		this.mAlertType = "0";
@@ -72,7 +77,8 @@ public class AlertItemModel {
 		this.mSequence = "0";
 	}
 	
-	public AlertItemModel(Cursor cursor){
+	public AlertItemModel(Context context, Cursor cursor){
+		this.mContext = context;
 		this.mId = cursor.getString(ID_COLUMN);
 		this.mAlertType = cursor.getString(ALERT_TYPE_COLUMN);
 		this.mBgColorId = cursor.getString(BG_COLOR_ID_COLUMN);
@@ -87,7 +93,8 @@ public class AlertItemModel {
 		this.mSequence = cursor.getString(SEQUENCE_COLUMN);
 	}
 	
-	public AlertItemModel(ContentValues values){
+	public AlertItemModel(Context context, ContentValues values){
+		this.mContext = context;
 		this.mId = values.getAsString(ID);
 		this.mAlertType = values.getAsString(ALERT_TYPE);
 		this.mBgColorId = values.getAsString(BG_COLOR_ID);
@@ -100,30 +107,13 @@ public class AlertItemModel {
 		this.mSequence = values.getAsString(SEQUENCE);
 	}
 	
-	public AlertItemModel(long id, int alertType,int bgColorId, 
-			long alertDate, long createDate,
-			long modifyDate, String shortContent, String content, 
-			int  version, int sequence){
-		this.mId = String.valueOf(id);
-		
-		this.mAlertType = String.valueOf(alertType);
-		this.mBgColorId = String.valueOf(bgColorId);
-		this.mAlertDate = String.valueOf(alertDate);
-		this.mCreateDate = String.valueOf(createDate);
-		this.mModifyDate = String.valueOf(modifyDate);
-		this.mShortContent = shortContent;
-		this.mContent = content;
-		this.mVersion = String.valueOf(version);
-		this.mSequence = String.valueOf(sequence);
-	}
-	
 	public ContentValues formatContentValuesWithoutId(){
 		ContentValues values = new ContentValues();
 		values.put(ALERT_TYPE, this.mAlertType);
 		values.put(BG_COLOR_ID, this.mBgColorId);
 		values.put(ALERT_DATE, this.mAlertDate);
 		values.put(CREATE_DATE, this.mCreateDate);
-		values.put(MODIFY_DATE, this.mModifyDate);
+		values.put(MODIFY_DATE, String.valueOf(new Date().getTime()));
 		values.put(SHORT_CONTENT, this.mShortContent);
 		values.put(CONTENT, this.mContent);
 		values.put(VERSION, this.mVersion);
@@ -208,5 +198,30 @@ public class AlertItemModel {
 	
 	public boolean hasAlert(){
 		return (mAlertDate == "0");
+	}
+	
+	public void insert(){
+		Long id = dbHelper.insert(this.formatContentValuesWithoutId());
+		this.setId(id);
+	}
+	
+	public void update(){
+		dbHelper.update(this.formatContentValuesWithoutId(),
+				AlertItemModel.ID + " = " + this.getId(), 
+				null);
+	}
+	
+	public boolean delete(){
+		return dbHelper.delete(
+				AlertItemModel.ID + " = " + this.getId(), 
+					null);
+	}
+	
+	public void deleteClock(){
+		ContentValues cv = new ContentValues();
+		cv.put(AlertItemModel.ALERT_DATE, 0);
+		dbHelper.update(cv, 
+				AlertItemModel.ID + " = " + this.getId(), 
+				null);
 	}
 }

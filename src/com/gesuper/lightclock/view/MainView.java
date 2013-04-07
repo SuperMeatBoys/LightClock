@@ -117,16 +117,22 @@ public class MainView  extends LinearLayout {
 			}
 
 		});
+
+		this.mDelete = (TextView)findViewById(R.id.alert_delete);
+		
+		this.initAdapter();
+	}
+	
+	private void initAdapter(){
 		AlertItemModel mAlertItem;
 		//mAlertItem = new AlertItemModel();
 		//mAlertItem.setContent("enough ? are you kidding me?");
-		this.mDelete = (TextView)findViewById(R.id.alert_delete);
 		Log.d(TAG, "init alert list");
-		DBHelperModel dbHelper = new DBHelperModel(this.mContext);
+		DBHelperModel dbHelper = DBHelperModel.getInstance(this.mContext);
 		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
 		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
 		while(cursor.moveToNext()){
-			mAlertItem = new AlertItemModel(cursor);
+			mAlertItem = new AlertItemModel(this.getContext(), cursor);
 			this.mAlertListArray.add(mAlertItem);
 		}
 		dbHelper.close();
@@ -134,9 +140,8 @@ public class MainView  extends LinearLayout {
 				this.mAlertListArray);
 		Log.d(TAG, "set adapter");
 		this.mListView.setAdapter(this.mAdapter);
-		
 	}
-
+	
 	public void onItemClicked(int position, AlertItemView view){
 		MainView.this.mCurItemView = view;
 		if(MainView.this.mListView.isRecored()) return;
@@ -153,7 +158,7 @@ public class MainView  extends LinearLayout {
 	}
 	
 	public boolean addNewItem(int bgColorId){
-		AlertItemModel mItemModel = new AlertItemModel();
+		AlertItemModel mItemModel = new AlertItemModel(this.getContext());
 		mItemModel.setBgColorId(bgColorId);
 		this.mAdapter.insert(mItemModel, 0);
 		this.createHandler.sendEmptyMessageDelayed(0, 300);

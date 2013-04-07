@@ -80,7 +80,7 @@ public class AlertListView extends ListView{
 		this.mDragItemView = null;
 		this.mDragStartPosition = -1;
 		this.setDivider(null);
-		AlertItemModel mItemModel = new AlertItemModel();
+		AlertItemModel mItemModel = new AlertItemModel(this.getContext());
 		mItemModel.setId((long) -2);
 		
 		headView = new AlertItemView(this.getContext());

@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.gesuper.lightclock.R;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -37,6 +38,7 @@ public class ClockView extends LinearLayout {
 		
 	}
 
+	@SuppressLint("SimpleDateFormat")
 	private void initResource() {
 		// TODO Auto-generated method stub
 		this.etCalendar = (EditText)findViewById(R.id.clock_calendar_et);
@@ -54,7 +56,9 @@ public class ClockView extends LinearLayout {
 				LinearLayout mCalendarView = 
 						(LinearLayout) LayoutInflater.from(ClockView.this.getContext()).
 						inflate(R.layout.activity_clock_calendar, null);
+				
 				final DatePicker localDatePicker = (DatePicker)mCalendarView.findViewById(R.id.clock_datepicker);
+				
 		        localDatePicker.init(1900 + ClockView.this.time.getYear(), 
 		        		ClockView.this.time.getMonth(), ClockView.this.time.getDate(), null);
 				new AlertDialog.Builder(ClockView.this.getContext()).
@@ -81,7 +85,6 @@ public class ClockView extends LinearLayout {
 		
 		this.btnTime.setOnClickListener(new OnClickListener(){
 
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -97,6 +100,7 @@ public class ClockView extends LinearLayout {
 					setView(mTimeView).
 					setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener(){
 
+						@SuppressWarnings("deprecation")
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							// TODO Auto-generated method stub
