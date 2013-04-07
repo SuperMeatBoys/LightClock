@@ -1,23 +1,26 @@
 package com.gesuper.lightclock.view;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 import com.gesuper.lightclock.R;
 import com.gesuper.lightclock.model.AlertItemModel;
+import com.gesuper.lightclock.model.AlertListAdapter;
 import com.gesuper.lightclock.model.BgColor;
+import com.gesuper.lightclock.model.DBHelperModel;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.View.OnTouchListener;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -40,7 +43,10 @@ public class AlertListView extends ListView{
 	private int paddingTop;
 	
 	private int RATIO = 2;
+
+	private AlertListAdapter mAdapter;
 	private AlertItemView headView;
+	private AlertItemModel mHeadModel;
 	private int headContentHeight;
 	private TextView mTextView;
 	
@@ -67,33 +73,33 @@ public class AlertListView extends ListView{
 	public AlertListView(Context context, AttributeSet attrs) {
 	    super(context, attrs);
 	    // TODO Auto-generated constructor stub
-	    this.mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();  
-	    this.initResource();
+	    //
+	    //this.initResource();
 	}
 	
-	private void initResource(){
+	public void initListView(){
 		//hide scroll bar
 		this.setVerticalScrollBarEnabled(true);
+		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();  
 		this.recored = 1;
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
 		this.mDragItemView = null;
 		this.mDragStartPosition = -1;
 		this.setDivider(null);
-		AlertItemModel mItemModel = new AlertItemModel(this.getContext());
-		mItemModel.setId((long) -2);
+		this.mHeadModel = new AlertItemModel(this.getContext());
+		this.mHeadModel.setId((long) -1);
+
+		this.initAdapter();
 		
-		headView = new AlertItemView(this.getContext());
-		headView.setModel(mItemModel);
-		headView.showFastMenu();
-		mTextView = (TextView)headView.findViewById(R.id.tv_content);
-		this.measureView(headView);
-		this.headContentHeight = this.headView.getMeasuredHeight() + this.headView.getMenuHeight();
-		Log.d(TAG, "headContentHeight" + this.headContentHeight);
-		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
+		this.headView = null;
+		//mTextView = (TextView)headView.findViewById(R.id.tv_content);
+		//this.measureView(headView);
+		//this.headContentHeight = this.headView.getMeasuredHeight() + this.headView.getMenuHeight();
+		//Log.d(TAG, "headContentHeight" + this.headContentHeight);
+		//this.headView.setPadding(0, -this.headContentHeight, 0, 0);
 		//this.headView.invalidate();
-		this.addHeaderView(headView);
-		
+		//this.addHeaderView(headView);
 		this.setOnItemLongClickListener(new OnItemLongClickListener(){
 
 			@Override
@@ -115,6 +121,27 @@ public class AlertListView extends ListView{
 		
 	}
 
+	public void initAdapter() {
+		// TODO Auto-generated method stub
+		ArrayList<AlertItemModel> mAlertListArray  = new ArrayList<AlertItemModel>();
+		AlertItemModel mAlertItem;
+		//mAlertItem = new AlertItemModel();
+		//mAlertItem.setContent("enough ? are you kidding me?");
+		Log.d(TAG, "init alert list");
+		DBHelperModel dbHelper = DBHelperModel.getInstance(this.getContext());
+		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
+		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
+		while(cursor.moveToNext()){
+			mAlertItem = new AlertItemModel(this.getContext(), cursor);
+			mAlertListArray.add(mAlertItem);
+		}
+		dbHelper.close();
+		this.mAdapter = new AlertListAdapter(this.getContext(), R.layout.activity_alert_item,
+				mAlertListArray);
+		Log.d(TAG, "set adapter");
+		this.setAdapter(this.mAdapter);
+	}
+
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 	 	// TODO Auto-generated method stub
@@ -126,13 +153,15 @@ public class AlertListView extends ListView{
 	 		y = (int)event.getY();
 	 		startY = y;
 	 		Log.i(TAG, "set rand bg color for head view");
-	 		this.headView.setRandBgColor();
-	 		Log.d(TAG, "" + this.getFirstVisiblePosition());
+	 		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
+	 		
+	 		Log.d(TAG, "FirstVisiblePosition: " + this.getFirstVisiblePosition());
 			if(this.getFirstVisiblePosition() == 0){
 				recored += 1;
-				startY = y;
 			}
 	 		final int k = AlertListView.this.pointToPosition(x, y);
+	 		
+	 		this.mAdapter.insert(this.mHeadModel, 0);
 	 		if( k == ListView.INVALID_POSITION ){
 	 			break;
 	 		}
@@ -153,6 +182,14 @@ public class AlertListView extends ListView{
 	 	case MotionEvent.ACTION_UP:
 	 		Log.i(TAG, "ACTION UP");
 	 		y = (int) event.getY();
+	 		if(this.headView == null){
+	 			this.headView = (AlertItemView) this.getChildAt(0);
+
+	 			this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
+	 			this.headContentHeight = this.headView.getMHeight();
+
+	 			Log.d(TAG, "headView: " + this.headContentHeight);
+	 		}
 	 		if(this.status == SEQUENCE){
 	 			//if(mDragItemView != null)
 	 			//mDragItemView.setVisibility(View.VISIBLE);
@@ -168,18 +205,30 @@ public class AlertListView extends ListView{
 	 			if(status == CREATE_RELEASE_UP){
 	 				status = CREATE_REFRESH_DONE;
 	 				changeHeaderViewByStatus();
-	 				createNewAlert();
+	 				this.createNewAlert();
 	 			}else{
 	 				status = CREATE_REFRESH_DONE;
-	 				changeHeaderViewByStatus();
-	 				this.headView.setPadding(0, -this.headContentHeight, 0, 0);
+	 				if(this.headView != null){ 
+	 					changeHeaderViewByStatus();
+	 					this.headView.hideFastMenu();
+	 					this.headView.setPadding(0, 0, 0, 0);
+	 				}
+	 				this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
 	 			}
 	 		}
  			recored = 1;
+ 			this.headView = null;
 	 		break;
 	 	case MotionEvent.ACTION_CANCEL:
 	 	case MotionEvent.ACTION_MOVE:
 	 		y = (int) event.getY();
+	 		if(this.headView == null){
+	 			this.headView = (AlertItemView) this.getChildAt(0);
+	 			this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
+	 			this.headContentHeight = this.headView.getMHeight() ;
+
+	 			Log.d(TAG, "headView: " + this.headContentHeight);
+	 		}
 	 		if(this.getFirstVisiblePosition() > 1){
 	 			this.recored = -1;
 	 		}
@@ -192,7 +241,6 @@ public class AlertListView extends ListView{
 	 			
 	 		} else if(this.status != NORMAL && this.recored > 0){
 	 			updateCreateStatus(y);
-			
 	 		}
             break;
 	 	}
@@ -258,8 +306,8 @@ public class AlertListView extends ListView{
 	
 	private void createNewAlert() {
 		// TODO Auto-generated method stub
-		this.headView.setPadding(0, -this.headContentHeight, 0, 0);
-		this.mMainView.addNewItem(this.headView.getModel().getBgColorId());
+		this.headView.setPadding(0, 0, 0, 0);
+		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 300);
 	}
 	
 	public View getItemAt(int index){
@@ -308,7 +356,7 @@ public class AlertListView extends ListView{
 			return ;
 		}
 		if(mDragCurrentPostion != tempPosition){
-			this.mMainView.exchangeAdapterItem(mDragCurrentPostion, tempPosition);
+			this.exchangeAdapterItem(mDragCurrentPostion, tempPosition);
 			mDragCurrentPostion = tempPosition;
 		}
 		
@@ -395,5 +443,31 @@ public class AlertListView extends ListView{
 		}
 		child.measure(childWidthSpec, childHeightSpec);
 	}
+	
+	public void exchangeAdapterItem(int x, int y){
+		Log.i(TAG, "x:" + x);
+		AlertItemModel modelX = this.mAdapter.getItem(x-1);
+		this.mAdapter.remove(modelX);
+		this.mAdapter.insert(modelX, y-1);
+	}
+	
+	public void saveSequence(){
 
+	    if (this.mAdapter != null){
+	    	for (int i = 0; i < this.mAdapter.getCount(); i++)
+	    	{
+	    		AlertItemView mItemView = (AlertItemView)this.getItemAt(i);
+	    		if (mItemView != null && mItemView.getSequence() != i)
+	    		{
+	    			mItemView.setSequence(i);
+	    			mItemView.updateSequence();
+	    		}
+	    	}
+	    }
+	}
+
+	public void removeModel(AlertItemModel model) {
+		// TODO Auto-generated method stub
+		this.mAdapter.remove(model);
+	}
 }

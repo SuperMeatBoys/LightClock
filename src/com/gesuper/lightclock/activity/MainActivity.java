@@ -1,15 +1,10 @@
 package com.gesuper.lightclock.activity;
 
 import com.gesuper.lightclock.R;
-import com.gesuper.lightclock.view.AlertItemView;
-import com.gesuper.lightclock.view.ClockView;
 import com.gesuper.lightclock.view.MainView;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.view.Menu;
 import android.view.View;
 

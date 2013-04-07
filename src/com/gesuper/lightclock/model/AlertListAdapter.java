@@ -34,6 +34,8 @@ public class AlertListAdapter extends ArrayAdapter<AlertItemModel> {
 		Log.d(TAG, "position:" + position + " content:" + mItemView.getContent());
 		if(mItemView.getModel().getId() == -1){
 			mItemView.showFastMenu();
+			mItemView.setPadding(0, - mItemView.getHeight(), 0, 0);
+			mItemView.setMHeight(mItemView.getHeight());
 			Log.d(TAG, "show menu:" + mItemView.getContent());
 		}
         return mItemView;

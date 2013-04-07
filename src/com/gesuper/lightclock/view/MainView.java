@@ -1,17 +1,12 @@
 package com.gesuper.lightclock.view;
 
-import java.util.ArrayList;
 import com.gesuper.lightclock.R;
-import com.gesuper.lightclock.model.AlertItemModel;
-import com.gesuper.lightclock.model.AlertListAdapter;
-import com.gesuper.lightclock.model.DBHelperModel;
 import com.gesuper.lightclock.view.AlertItemView.PopupListener;
 import com.gesuper.lightclock.view.AlertItemView.ResizeListener;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
@@ -19,11 +14,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.Animation.AnimationListener;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -37,21 +27,17 @@ public class MainView  extends LinearLayout {
 	public static final String TAG = "MainView";
 	
 	private Context mContext;
-	private ArrayList<AlertItemModel> mAlertListArray;
 	private AlertListView mListView ;
 	private AlertItemView mCurItemView;
 	private PopupWindow mPopView;
-	private AlertListAdapter mAdapter;
 	private TextView mDelete;
 	
-	private Handler createHandler = new Handler(){
+	public Handler createHandler = new Handler(){
 		public void handleMessage(Message message){
 			
 			final int position = message.what;
 			MainView.this.mCurItemView = 
-					(AlertItemView) MainView.this.mListView.getItemAt(
-							position - MainView.this.mListView.getFirstVisiblePosition()
-					);
+					(AlertItemView) MainView.this.mListView.getChildAt(position);
 			
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
@@ -65,7 +51,7 @@ public class MainView  extends LinearLayout {
 			MainView.this.mCurItemView.hideFastMenu();
 			MainView.this.mCurItemView.setStatusNormal();
 			MainView.this.mCurItemView.setPadding(0, 0, 0, 0);
-			MainView.this.mAdapter.remove(MainView.this.mCurItemView.getModel());
+			MainView.this.mListView.removeModel(MainView.this.mCurItemView.getModel());
 		}
 	};
 	
@@ -96,9 +82,8 @@ public class MainView  extends LinearLayout {
 		
 		inflate(context, R.layout.activity_main, this);
 		this.mContext = context;
-		this.mAlertListArray  = new ArrayList<AlertItemModel>();
 		this.mPopView = null;
-		initResource();
+		this.initResource();
 		
 	}
 	
@@ -120,26 +105,7 @@ public class MainView  extends LinearLayout {
 
 		this.mDelete = (TextView)findViewById(R.id.alert_delete);
 		
-		this.initAdapter();
-	}
-	
-	private void initAdapter(){
-		AlertItemModel mAlertItem;
-		//mAlertItem = new AlertItemModel();
-		//mAlertItem.setContent("enough ? are you kidding me?");
-		Log.d(TAG, "init alert list");
-		DBHelperModel dbHelper = DBHelperModel.getInstance(this.mContext);
-		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
-		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
-		while(cursor.moveToNext()){
-			mAlertItem = new AlertItemModel(this.getContext(), cursor);
-			this.mAlertListArray.add(mAlertItem);
-		}
-		dbHelper.close();
-		this.mAdapter = new AlertListAdapter(mContext, R.layout.activity_alert_item,
-				this.mAlertListArray);
-		Log.d(TAG, "set adapter");
-		this.mListView.setAdapter(this.mAdapter);
+		this.mListView.initListView();
 	}
 	
 	public void onItemClicked(int position, AlertItemView view){
@@ -155,15 +121,6 @@ public class MainView  extends LinearLayout {
 		if(this.mListView.getFirstVisiblePosition() > 0 ){
 			this.mListView.setSelection(0);
 		}
-	}
-	
-	public boolean addNewItem(int bgColorId){
-		AlertItemModel mItemModel = new AlertItemModel(this.getContext());
-		mItemModel.setBgColorId(bgColorId);
-		this.mAdapter.insert(mItemModel, 0);
-		this.createHandler.sendEmptyMessageDelayed(0, 300);
-		this.requestFocus();
-		return true;
 	}
 	
 	private void createTopRectView(final int position) {
@@ -312,7 +269,7 @@ public class MainView  extends LinearLayout {
 					public void onClick(DialogInterface dialog, int which) {
 						// TODO Auto-generated method stub
 						itemView.deleteItem();
-						mAdapter.remove(itemView.getModel());
+						mListView.removeModel(itemView.getModel());
 					}
 				}).setNegativeButton(R.string.dialog_cancel, null).show();
 				
@@ -326,17 +283,7 @@ public class MainView  extends LinearLayout {
 			this.mPopView = null;
 	    }
 
-	    if (this.mAdapter != null){
-	    	for (int i = 0; i < this.mAdapter.getCount(); i++)
-	    	{
-	    		AlertItemView mItemView = (AlertItemView)this.mListView.getItemAt(i);
-	    		if (mItemView != null && mItemView.getSequence() != i)
-	    		{
-	    			mItemView.setSequence(i);
-	    			mItemView.updateSequence();
-	    		}
-	    	}
-	    }
+	    this.mListView.saveSequence();
 	}
 
 	public void setPopupDismiss() {
@@ -346,17 +293,5 @@ public class MainView  extends LinearLayout {
 			this.mPopView = null;
 		}
 	}
-	
-	public void exchangeAdapterItem(int x, int y){
-		Log.i(TAG, "x:" + x);
-		AlertItemModel modelX = this.mAdapter.getItem(x-1);
-		this.mAdapter.remove(modelX);
-		this.mAdapter.insert(modelX, y-1);
-	}
 
-	public void refreshAdapter() {
-		// TODO Auto-generated method stub
-		this.saveSequence();
-		this.mAdapter.notifyDataSetChanged();
-	}
 }

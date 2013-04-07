@@ -92,6 +92,8 @@ public class AlertItemView extends LinearLayout {
 		}
 		
 	};
+
+	private int mHeight;
 	
 	public AlertItemView(Context context){
 		super(context);
@@ -109,6 +111,7 @@ public class AlertItemView extends LinearLayout {
 	
 	private void initResource() {
 		// TODO Auto-generated method stub
+		this.mHeight = 0;
 		this.mContent = (RelativeLayout)findViewById(R.id.alert_content);
 		this.mEditText = (EditText)findViewById(R.id.ed_content);
 		this.mTextView = (TextView)findViewById(R.id.tv_content);
@@ -207,7 +210,7 @@ public class AlertItemView extends LinearLayout {
 		this.mEditText.setText(this.mItemModel.getContent());
 		this.mTextView.setText(this.mItemModel.getShortContentForTextView());
 		
-		this.changeBgColor(this.mItemModel.getBgColorId());
+		this.setBgColor(this.mItemModel.getBgColorId());
 
 		this.mModifyTime.setText(this.getFormatTime(this.mItemModel.getModifyDate()));
 		
@@ -367,7 +370,7 @@ public class AlertItemView extends LinearLayout {
 		this.getContext().startActivity(Intent.createChooser(intent, "Share"));
 	}
 	
-	public void changeBgColor(int colorId){
+	public void setBgColor(int colorId){
 		int color = BgColor.COLOR_1;
 		switch(colorId){
 		case 1:
@@ -383,11 +386,15 @@ public class AlertItemView extends LinearLayout {
 			color = BgColor.COLOR_4;
 			break;
 		}
-		
+
+		this.mContent.setBackgroundColor(color);
+	}
+	
+	public void changeBgColor(int colorId){
+		this.setBgColor(colorId);
 		this.mItemModel.setBgColorId(colorId);
 		this.mItemModel.update();
 		
-		this.mContent.setBackgroundColor(color);
 	}
 	
 	public void updateSequence(){
@@ -501,5 +508,14 @@ public class AlertItemView extends LinearLayout {
 			childHeightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 		}
 		child.measure(childWidthSpec, childHeightSpec);
+	}
+
+	public void setMHeight(int height) {
+		// TODO Auto-generated method stub
+		this.mHeight = height;
+	}
+	
+	public int getMHeight(){
+		return this.mHeight;
 	}
 }

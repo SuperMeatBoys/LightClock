@@ -79,6 +79,7 @@ public class AlertItemModel {
 	
 	public AlertItemModel(Context context, Cursor cursor){
 		this.mContext = context;
+		this.dbHelper = DBHelperModel.getInstance(this.mContext);
 		this.mId = cursor.getString(ID_COLUMN);
 		this.mAlertType = cursor.getString(ALERT_TYPE_COLUMN);
 		this.mBgColorId = cursor.getString(BG_COLOR_ID_COLUMN);
@@ -95,6 +96,7 @@ public class AlertItemModel {
 	
 	public AlertItemModel(Context context, ContentValues values){
 		this.mContext = context;
+		this.dbHelper = DBHelperModel.getInstance(this.mContext);
 		this.mId = values.getAsString(ID);
 		this.mAlertType = values.getAsString(ALERT_TYPE);
 		this.mBgColorId = values.getAsString(BG_COLOR_ID);
