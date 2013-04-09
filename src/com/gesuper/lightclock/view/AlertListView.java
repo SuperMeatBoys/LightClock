@@ -37,7 +37,6 @@ public class AlertListView extends ListView{
 	
 	private MainView mMainView;
 	private int recored;
-	private int firstItemIndex;
 	private int startY;
 	private int status;
 	private int paddingTop;

@@ -26,6 +26,10 @@ public class ClockView extends LinearLayout {
 	private Button btnTime;
 	private Date time;
 	
+	public ClockView(Context context){
+		super(context);
+	}
+	
 	public ClockView(Context context, long alertTime) {
 		super(context);
 		// TODO Auto-generated constructor stub
@@ -85,6 +89,7 @@ public class ClockView extends LinearLayout {
 		
 		this.btnTime.setOnClickListener(new OnClickListener(){
 
+			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -100,7 +105,6 @@ public class ClockView extends LinearLayout {
 					setView(mTimeView).
 					setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener(){
 
-						@SuppressWarnings("deprecation")
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							// TODO Auto-generated method stub

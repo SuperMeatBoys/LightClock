@@ -62,7 +62,7 @@ public class ClockAlertActivity extends Activity implements OnDismissListener {
         this.mVibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
         mPlayer = new MediaPlayer();
         this.showActionDialog();
-        //this.playAlarmSound();
+        this.playAlarmSound();
         if(this.mVibrator.hasVibrator())
         	this.mVibrator.vibrate(new long[]{1000L, 1000L, 1000L, 1000L}, 0);
     }
