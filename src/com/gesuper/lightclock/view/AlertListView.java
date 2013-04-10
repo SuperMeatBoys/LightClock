@@ -134,7 +134,6 @@ public class AlertListView extends ListView{
 			mAlertItem = new AlertItemModel(this.getContext(), cursor);
 			mAlertListArray.add(mAlertItem);
 		}
-		dbHelper.close();
 		this.mAdapter = new AlertListAdapter(this.getContext(), R.layout.activity_alert_item,
 				mAlertListArray);
 		Log.d(TAG, "set adapter");
