@@ -206,24 +206,26 @@ public class AlertListView extends ListView{
 	 				this.createNewAlert();
 	 			}else{
 	 				status = CREATE_REFRESH_DONE;
+	 				this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
 	 				if(this.headView != null){ 
 	 					changeHeaderViewByStatus();
 	 					this.headView.hideFastMenu();
 	 					this.headView.setPadding(0, 0, 0, 0);
 	 				}
-	 				this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
 	 			}
 	 		}
  			recored = 1;
  			this.headView = null;
+ 			
 	 		break;
 	 	case MotionEvent.ACTION_CANCEL:
 	 	case MotionEvent.ACTION_MOVE:
 	 		y = (int) event.getY();
 	 		if(this.headView == null){
 	 			this.headView = (AlertItemView) this.getChildAt(0);
+
 	 			this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
-	 			this.headContentHeight = this.headView.getMHeight() ;
+	 			this.headContentHeight = this.headView.getMHeight();
 
 	 			Log.d(TAG, "headView: " + this.headContentHeight);
 	 		}
@@ -306,6 +308,7 @@ public class AlertListView extends ListView{
 		// TODO Auto-generated method stub
 		this.headView.setPadding(0, 0, 0, 0);
 		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 300);
+		this.mHeadModel = new AlertItemModel(this.getContext());
 	}
 	
 	public View getItemAt(int index){
