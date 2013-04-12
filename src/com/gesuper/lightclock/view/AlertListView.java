@@ -13,8 +13,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
+import android.os.Handler;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,15 +32,26 @@ import android.widget.TextView;
 public class AlertListView extends ListView{
 
 	public static final String TAG = "AlertListView";
+	public static final int TAP_TIMEOUT = ViewConfiguration.getTapTimeout();
+	public static final int LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout();
 	public static final int NORMAL = 0;
 	public static final int CREATE_PULL_DOWN = 1;
 	public static final int CREATE_RELEASE_UP = 2;
 	public static final int CREATE_REFRESH_DONE = 3;
 	public static final int SEQUENCE = 4;
 	
+	public static final int ACTION_DOWN = 0;
+	public static final int ACTION_SINGLE_CLICK = 1;
+	public static final int ACTION_TAP_START = 2;
+	public static final int ACTION_TAP_END = 3;
+	public static final int ACTION_LONG_PRESS_START = 4;
+	public static final int ACTION_LONG_PRESS_END = 5;
+	public static final int ACTION_SCROLL = 6;
+	
 	private MainView mMainView;
 	private int recored;
-	private int startY;
+	private int mStartY;
+	private int mCurrentRawY;
 	private int status;
 	private int paddingTop;
 	
@@ -51,11 +65,11 @@ public class AlertListView extends ListView{
 	
 	private WindowManager mWindowManager;
     private WindowManager.LayoutParams mWindowParams;
-    private AlertItemView mDragItemView;
 	private Bitmap mDragBitmap;
 	private ImageView mDragView;
 	//开始位置
 	private int mDragStartPosition;
+    private AlertItemView mDragItemView;
 	//当前的位置
 	private int mDragCurrentPostion;
 	private int mDragOffSetY;
@@ -68,6 +82,32 @@ public class AlertListView extends ListView{
 
 	private int mHeight;
 	private int mTouchSlop;
+	private boolean mStillDown;
+	private boolean mLongPress;
+	
+	private Handler mActionHandler = new Handler(){
+		public void handleMessage(Message message){
+			switch(message.what){
+			case ACTION_DOWN:
+				onDown();
+				break;
+			case ACTION_SINGLE_CLICK:
+				onSingleClick();
+				break;
+			case ACTION_LONG_PRESS_START:
+				if(mStillDown){
+					mLongPress = true;
+					onLongPressStart();
+				}
+				break;
+			case ACTION_SCROLL:
+				onScroll();
+				break;
+			}
+		}
+	};
+	private int mCurrentY;
+	private boolean mScroll;
 	
 	public AlertListView(Context context, AttributeSet attrs) {
 	    super(context, attrs);
@@ -92,13 +132,7 @@ public class AlertListView extends ListView{
 		this.initAdapter();
 		
 		this.headView = null;
-		//mTextView = (TextView)headView.findViewById(R.id.tv_content);
-		//this.measureView(headView);
-		//this.headContentHeight = this.headView.getMeasuredHeight() + this.headView.getMenuHeight();
-		//Log.d(TAG, "headContentHeight" + this.headContentHeight);
-		//this.headView.setPadding(0, -this.headContentHeight, 0, 0);
-		//this.headView.invalidate();
-		//this.addHeaderView(headView);
+		/*
 		this.setOnItemLongClickListener(new OnItemLongClickListener(){
 
 			@Override
@@ -116,7 +150,7 @@ public class AlertListView extends ListView{
 				return false;
 			}
 			
-		});
+		});*/
 		
 	}
 
@@ -143,143 +177,135 @@ public class AlertListView extends ListView{
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 	 	// TODO Auto-generated method stub
-	 	final int x, y;
+	 	this.mCurrentY = (int) event.getY();
+	 	this.mCurrentRawY = (int) event.getRawY();
 	 	switch(event.getAction()){
 	 	case MotionEvent.ACTION_DOWN:
-	 		Log.i(TAG, "ACTION DOWN");
-	 		x = (int)event.getX();
-	 		y = (int)event.getY();
-	 		startY = y;
-	 		Log.i(TAG, "set rand bg color for head view");
-	 		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
-	 		
-	 		Log.d(TAG, "FirstVisiblePosition: " + this.getFirstVisiblePosition());
-			if(this.getFirstVisiblePosition() == 0){
-				recored += 1;
-			}
-	 		final int k = AlertListView.this.pointToPosition(x, y);
-	 		
-	 		this.mAdapter.insert(this.mHeadModel, 0);
-	 		if( k == ListView.INVALID_POSITION ){
-	 			break;
-	 		}
-	 		mDragStartPosition = k;
-	 		mDragItemView = (AlertItemView)this.getChildAt(k - this.getFirstVisiblePosition());
-	
-	 		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
-	 			this.mDragPointX = 9;
-	 			this.mDragPointY = y - mDragItemView.getTop();
-	 			this.mDragOffSetY = (int) (event.getRawY() - y);
-				
-	 			int height = getHeight();
-	 			mUpperBound = Math.min(y - mTouchSlop, height / 3);
-	 			mLowerBound = Math.max(y + mTouchSlop, height * 2 / 3);
-	 			mDragCurrentPostion = k;
-	 		}
+	 		this.mStillDown = true;
+	 		this.mLongPress = false;
+	 		this.mScroll = false;
+	 		this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
+	 		this.mActionHandler.sendEmptyMessageDelayed(
+	 				ACTION_LONG_PRESS_START, TAP_TIMEOUT + LONG_PRESS_TIMEOUT);
 	 		break;
 	 	case MotionEvent.ACTION_UP:
-	 		Log.i(TAG, "ACTION UP");
-	 		y = (int) event.getY();
-	 		if(this.headView == null){
-	 			this.headView = (AlertItemView) this.getChildAt(0);
-
-	 			this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
-	 			this.headContentHeight = this.headView.getMHeight();
-
-	 			Log.d(TAG, "headView: " + this.headContentHeight);
+	 		this.mStillDown = false;
+	 		if(this.mLongPress){
+	 			this.mActionHandler.sendEmptyMessage(ACTION_LONG_PRESS_END);
+	 		} else if(this.mScroll){
+	 			this.mActionHandler.sendEmptyMessage(ACTION_SINGLE_CLICK);
+	 		}else {
+	 			this.mActionHandler.sendEmptyMessage(ACTION_SINGLE_CLICK);
 	 		}
-	 		if(this.status == SEQUENCE){
-	 			//if(mDragItemView != null)
-	 			//mDragItemView.setVisibility(View.VISIBLE);
-				if(y > this.getHeight()){
-	 				Log.d(TAG, "Up drag position:" + mDragStartPosition);
-	 				this.mMainView.updateDeleteColor(false);
-	 				this.mMainView.deleteItem(mDragItemView);
-	 			}
-	 			stopDrag();
- 				this.mDragStartPosition = -1;
-	 			this.status = CREATE_REFRESH_DONE;
-	 		} else if(this.status != NORMAL){
-	 			if(status == CREATE_RELEASE_UP){
-	 				status = CREATE_REFRESH_DONE;
-	 				changeHeaderViewByStatus();
-	 				this.createNewAlert();
-	 			}else{
-	 				status = CREATE_REFRESH_DONE;
-	 				this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
-	 				if(this.headView != null){ 
-	 					changeHeaderViewByStatus();
-	 					this.headView.hideFastMenu();
-	 					this.headView.setPadding(0, 0, 0, 0);
-	 				}
-	 			}
-	 		}
- 			recored = 1;
- 			this.headView = null;
- 			
+	 		this.mLongPress = false;
 	 		break;
-	 	case MotionEvent.ACTION_CANCEL:
 	 	case MotionEvent.ACTION_MOVE:
-	 		y = (int) event.getY();
-	 		if(this.headView == null){
-	 			this.headView = (AlertItemView) this.getChildAt(0);
-
-	 			this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
-	 			this.headContentHeight = this.headView.getMHeight();
-
-	 			Log.d(TAG, "headView: " + this.headContentHeight);
-	 		}
-	 		if(this.getFirstVisiblePosition() > 1){
-	 			this.recored = -1;
-	 		}
-	 		if(this.status == SEQUENCE){
-	 			dragView(y);
-	 			adjustScrollBounds(y);
-	 			if(y > this.getHeight()){
-	 				this.mMainView.updateDeleteColor(true);
-	 			} else this.mMainView.updateDeleteColor(false);
+	 		this.mStillDown = true;
+			//prepare for create new item
+	 		if(!this.mLongPress && !this.mScroll){
+	 	 		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
+	 			this.mAdapter.insert(this.mHeadModel, 0);
 	 			
-	 		} else if(this.status != NORMAL && this.recored > 0){
-	 			updateCreateStatus(y);
+		 		this.mScroll = true;
 	 		}
-            break;
+	 		if(!this.mLongPress){
+	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
+	 			this.mActionHandler.sendEmptyMessage(ACTION_TAP_START);
+	 		}
+	 		this.mActionHandler.sendEmptyMessage(ACTION_SCROLL);
+	 		break;
 	 	}
 	 	return super.onTouchEvent(event);
+	}
+	
+	private void onDown(){
+ 		this.mStartY = this.mCurrentY;
+ 		//prepare for move item after long press
+ 		int position = AlertListView.this.pointToPosition(0, this.mCurrentY);
+ 		if(position == INVALID_POSITION){
+			return ;
+		}
+ 		this.mDragStartPosition = position;
+ 		this.mDragItemView = (AlertItemView)this.getChildAt(position - this.getFirstVisiblePosition());
+
+ 		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
+ 			this.mDragPointX = 9;
+ 			this.mDragPointY = this.mCurrentY - mDragItemView.getTop();
+ 			this.mDragOffSetY = (int) (this.mCurrentRawY - this.mCurrentY);
+			
+ 			int height = getHeight();
+ 			mUpperBound = Math.min(this.mCurrentY - mTouchSlop, height / 3);
+ 			mLowerBound = Math.max(this.mCurrentY + mTouchSlop, height * 2 / 3);
+ 			mDragCurrentPostion = position;
+ 		}
+	}
+	
+	//handle the single click event
+	private void onSingleClick(){
+		int position = this.pointToPosition(0, this.mCurrentY);
+		if(position == INVALID_POSITION){
+			return ;
+		}
+		AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
+		this.mMainView.onItemClicked(position, view);
+	}
+	
+	private void onLongPressStart(){
+		this.mLongPress = true;
+		this.status = SEQUENCE;
+		View itemContent = this.mDragItemView.findViewById(R.id.alert_content);
+		itemContent.setDrawingCacheEnabled(true);
+		Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
+		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
+	}
+	
+	private void onLongPressEnd(){
+		if(this.mCurrentY > this.getHeight()){
+			this.mMainView.updateDeleteBtnColor(false);
+			this.mMainView.deleteItem(mDragItemView);
+		}
+		stopDrag();
+		this.mDragStartPosition = -1;
+		this.status = CREATE_REFRESH_DONE;
+	}
+	
+	private void onScroll(){
+		
 	}
 	
  	private void updateCreateStatus(int y) {
 		// TODO Auto-generated method stub
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);
-			if(y-startY < 0){
+			if(y-mStartY < 0){
 				this.status = CREATE_REFRESH_DONE;
 				changeHeaderViewByStatus();
 			}
-			else if(y-startY < headContentHeight){
+			else if(y-mStartY < headContentHeight){
 				this.status = CREATE_PULL_DOWN;
 				changeHeaderViewByStatus();
-			} else if(y-startY > 4 * headContentHeight){
+			} else if(y-mStartY > 4 * headContentHeight){
 				return ;
 			}
-			paddingTop = (y - startY) - headContentHeight;
+			paddingTop = (y - mStartY) - headContentHeight;
 			headView.setPadding(0, paddingTop / this.RATIO, 
 					0, 0);
 		}
 		else if(this.status == CREATE_PULL_DOWN){
 			setSelection(0);
-			if(y - startY >= headContentHeight){
+			if(y - mStartY >= headContentHeight){
 				this.status = CREATE_RELEASE_UP;
 				changeHeaderViewByStatus();
-			}else if(y - startY <= 0){
+			}else if(y - mStartY <= 0){
 				this.status = CREATE_REFRESH_DONE;
 				changeHeaderViewByStatus();
 			}
-			paddingTop = (y - startY) - headContentHeight;
+			paddingTop = (y - mStartY) - headContentHeight;
 			headView.setPadding(0, paddingTop / this.RATIO, 
 					0, 0);
 		}
 		else if(this.status == CREATE_REFRESH_DONE){
-			if(y - startY > 0){
+			if(y - mStartY > 0){
 				this.status = CREATE_PULL_DOWN;
 				changeHeaderViewByStatus();
 			}

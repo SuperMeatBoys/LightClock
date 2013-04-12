@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -255,7 +256,7 @@ public class MainView  extends LinearLayout {
 		else this.mDelete.setVisibility(View.GONE);
 	}
 	
-	public void updateDeleteColor(boolean f){
+	public void updateDeleteBtnColor(boolean f){
 		if(f)
 			this.mDelete.setTextColor(0xFFDC143C);
 		else this.mDelete.setTextColor(0xFF000000);
