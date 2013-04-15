@@ -251,7 +251,6 @@ public class AlertListView extends ListView{
 			this.status = CREATE_REFRESH_DONE;
 			if(this.headView != null){ 
 				changeHeaderViewByStatus();
-				this.headView.hideFastMenu();
 				this.headView.setPadding(0, 0, 0, 0);
 			}
 			this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());

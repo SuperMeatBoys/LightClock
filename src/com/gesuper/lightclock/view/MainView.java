@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -42,7 +41,6 @@ public class MainView  extends LinearLayout {
 			final int position = message.what;
 			MainView.this.mCurItemView = 
 					(AlertItemView) MainView.this.mListView.getChildAt(position);
-			MainView.this.mCurItemView.showMenu();
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
 			MainView.this.mCurItemView.startEdit(true);
@@ -52,7 +50,6 @@ public class MainView  extends LinearLayout {
 	private Handler removeHandler = new Handler(){
 		
 		public void handleMessage(Message message){
-			MainView.this.mCurItemView.hideFastMenu();
 			MainView.this.mCurItemView.setStatusNormal();
 			MainView.this.mCurItemView.setPadding(0, 0, 0, 0);
 			MainView.this.mListView.removeModel(MainView.this.mCurItemView.getModel());
@@ -116,7 +113,6 @@ public class MainView  extends LinearLayout {
 		MainView.this.mCurItemView = view;
 		if(MainView.this.mListView.isRecored()) return;
 		if(MainView.this.mCurItemView.getStatus() != AlertItemView.STATUS_NORMAL) return ;
-		MainView.this.mCurItemView.showMenu();
 		MainView.this.editHandler.sendEmptyMessageDelayed(position, 50);
 	}
 	

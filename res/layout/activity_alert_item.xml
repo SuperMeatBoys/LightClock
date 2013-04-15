@@ -4,69 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="10dip" >
-	<LinearLayout
-        android:id="@+id/item_menu"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#FFFFFFFF"
-        >
-		
-	    <TextView android:id="@+id/item_modify_time"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:gravity="center"
-	        android:padding="5dip"
-	        android:textSize="15sp"
-	        />        
-        
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-			>
-			<LinearLayout 
-	        	android:layout_width="wrap_content"
-	        	android:layout_height="wrap_content"
-	        	android:id="@+id/item_clock"
-		        android:padding="5dp"
-	        	android:orientation="horizontal">
-		        <TextView
-		            android:layout_width="wrap_content"
-            		android:layout_height="wrap_content"
-		            android:text="@string/item_menu_clock"
-		            android:gravity="center"
-		            android:textSize="15sp" />
-				<TextView
-				    android:id="@+id/item_clock_time"
-		            android:layout_width="wrap_content"
-            		android:layout_height="wrap_content"
-		            android:gravity="center"
-		            android:textSize="15sp" />
-			</LinearLayout>
-			
-	        <TextView
-	            android:id="@+id/item_share"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_gravity="bottom"
-	            android:gravity="center"
-	            android:padding="5dip"
-	            android:text="@string/item_menu_share"
-	            android:textSize="15sp" />
-			<TextView
-	            android:id="@+id/item_color"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:layout_gravity="bottom"
-	            android:gravity="center"
-	            android:padding="5dip"
-	            android:text="@string/item_menu_color"
-	            android:textColor="#8B008B"
-	            android:textSize="15sp" />
-        
-		</LinearLayout>
-    </LinearLayout>
         
     <RelativeLayout 
         android:id="@+id/alert_content"
@@ -74,11 +11,13 @@
         android:layout_height="wrap_content"
         >
         
-        <TextView android:id="@+id/tv_content"
+        <TextView 
+            android:id="@+id/tv_content"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textSize="20.0sp"
-            android:padding="14dip" 
+            android:padding="14dip"
+            android:textIsSelectable="true" 
 	        android:background="@null" 
             android:maxLines="3"
         />
@@ -89,11 +28,12 @@
             android:padding="14dip"
             android:maxLines="3"
         	android:visibility="gone" 
+        	android:textIsSelectable="true"
 	        android:background="@null" 
 	        android:scrollHorizontally="false"
             android:inputType="textMultiLine" 
 	        android:imeOptions="actionDone"/>
         
     </RelativeLayout>
-    
+    <TextView></TextView>
 </LinearLayout>
