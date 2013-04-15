@@ -17,14 +17,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,6 +30,8 @@ import android.widget.TextView;
 public class AlertListView extends ListView{
 
 	public static final String TAG = "AlertListView";
+	@SuppressWarnings("deprecation")
+	public static final int TOUCH_SLOP = ViewConfiguration.getTouchSlop();
 	public static final int TAP_TIMEOUT = ViewConfiguration.getTapTimeout();
 	public static final int LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout();
 	public static final int NORMAL = 0;
@@ -42,8 +42,8 @@ public class AlertListView extends ListView{
 	
 	public static final int ACTION_DOWN = 0;
 	public static final int ACTION_SINGLE_CLICK = 1;
-	public static final int ACTION_TAP_START = 2;
-	public static final int ACTION_TAP_END = 3;
+	public static final int ACTION_TOUCH_START = 2;
+	public static final int ACTION_TOUCH_END = 3;
 	public static final int ACTION_LONG_PRESS_START = 4;
 	public static final int ACTION_LONG_PRESS_END = 5;
 	public static final int ACTION_SCROLL = 6;
@@ -51,6 +51,7 @@ public class AlertListView extends ListView{
 	private MainView mMainView;
 	private int recored;
 	private int mStartY;
+	private int mCurrentY;
 	private int mCurrentRawY;
 	private int status;
 	private int paddingTop;
@@ -67,8 +68,7 @@ public class AlertListView extends ListView{
     private WindowManager.LayoutParams mWindowParams;
 	private Bitmap mDragBitmap;
 	private ImageView mDragView;
-	//开始位置
-	private int mDragStartPosition;
+	
     private AlertItemView mDragItemView;
 	//当前的位置
 	private int mDragCurrentPostion;
@@ -82,6 +82,7 @@ public class AlertListView extends ListView{
 
 	private int mHeight;
 	private int mTouchSlop;
+	private boolean mScroll;
 	private boolean mStillDown;
 	private boolean mLongPress;
 	
@@ -94,26 +95,36 @@ public class AlertListView extends ListView{
 			case ACTION_SINGLE_CLICK:
 				onSingleClick();
 				break;
+			case ACTION_TOUCH_START:
+				onTouchStart();
+				break;
+			case ACTION_TOUCH_END:
+				if(mScroll == true){
+					onTouchEnd();
+				}
+				break;
 			case ACTION_LONG_PRESS_START:
 				if(mStillDown){
 					mLongPress = true;
 					onLongPressStart();
 				}
 				break;
+			case ACTION_LONG_PRESS_END:
+				mLongPress = false;
+				onLongPressEnd();
+				break;
 			case ACTION_SCROLL:
 				onScroll();
 				break;
 			}
 		}
+
 	};
-	private int mCurrentY;
-	private boolean mScroll;
 	
 	public AlertListView(Context context, AttributeSet attrs) {
 	    super(context, attrs);
 	    // TODO Auto-generated constructor stub
-	    //
-	    //this.initResource();
+
 	}
 	
 	public void initListView(){
@@ -121,36 +132,15 @@ public class AlertListView extends ListView{
 		this.setVerticalScrollBarEnabled(true);
 		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();  
 		this.recored = 1;
+		this.headView = null;
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
+		this.mScroll = true;
 		this.mDragItemView = null;
-		this.mDragStartPosition = -1;
 		this.setDivider(null);
 		this.mHeadModel = new AlertItemModel(this.getContext());
-		this.mHeadModel.setId((long) -1);
-
+		this.mScroll = true;
 		this.initAdapter();
-		
-		this.headView = null;
-		/*
-		this.setOnItemLongClickListener(new OnItemLongClickListener(){
-
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				// TODO Auto-generated method stub
-				Log.i(TAG, "on item long click " + position);
-				status = SEQUENCE;
-				View v = AlertListView.this.getChildAt(position);
-				View itemContent = v.findViewById(R.id.alert_content);
-				itemContent.setDrawingCacheEnabled(true);
-				Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
-				startDrag(bitmap, mDragPointY + v.getTop());
-				//view.setVisibility(View.INVISIBLE);
-				return false;
-			}
-			
-		});*/
 		
 	}
 
@@ -158,11 +148,7 @@ public class AlertListView extends ListView{
 		// TODO Auto-generated method stub
 		ArrayList<AlertItemModel> mAlertListArray  = new ArrayList<AlertItemModel>();
 		AlertItemModel mAlertItem;
-		//mAlertItem = new AlertItemModel();
-		//mAlertItem.setContent("enough ? are you kidding me?");
-		Log.d(TAG, "init alert list");
 		DBHelperModel dbHelper = DBHelperModel.getInstance(this.getContext());
-		//dbHelper.insert(mAlertItem.formatContentValuesWithoutId());
 		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
 		while(cursor.moveToNext()){
 			mAlertItem = new AlertItemModel(this.getContext(), cursor);
@@ -186,31 +172,34 @@ public class AlertListView extends ListView{
 	 		this.mScroll = false;
 	 		this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
 	 		this.mActionHandler.sendEmptyMessageDelayed(
-	 				ACTION_LONG_PRESS_START, TAP_TIMEOUT + LONG_PRESS_TIMEOUT);
+	 				ACTION_LONG_PRESS_START, LONG_PRESS_TIMEOUT);
 	 		break;
 	 	case MotionEvent.ACTION_UP:
 	 		this.mStillDown = false;
 	 		if(this.mLongPress){
 	 			this.mActionHandler.sendEmptyMessage(ACTION_LONG_PRESS_END);
 	 		} else if(this.mScroll){
-	 			this.mActionHandler.sendEmptyMessage(ACTION_SINGLE_CLICK);
+	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
+	 			this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_END);
 	 		}else {
-	 			this.mActionHandler.sendEmptyMessage(ACTION_SINGLE_CLICK);
+	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
+	 			this.onTouchEnd();
+	 			this.mActionHandler.sendEmptyMessageDelayed(ACTION_SINGLE_CLICK, 10);
 	 		}
 	 		this.mLongPress = false;
 	 		break;
 	 	case MotionEvent.ACTION_MOVE:
-	 		this.mStillDown = true;
-			//prepare for create new item
-	 		if(!this.mLongPress && !this.mScroll){
-	 	 		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
-	 			this.mAdapter.insert(this.mHeadModel, 0);
-	 			
-		 		this.mScroll = true;
+	 		int deltaY = this.mCurrentY - this.mStartY;
+	 		if(deltaY * deltaY < TOUCH_SLOP)
+	 			break;
+	 		if(!this.mStillDown){
+	 			this.mStillDown = true;
+	 			this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
 	 		}
-	 		if(!this.mLongPress){
+	 		if(!this.mLongPress && !this.mScroll){
 	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-	 			this.mActionHandler.sendEmptyMessage(ACTION_TAP_START);
+	 			this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_START);
+		 		this.mScroll = true;
 	 		}
 	 		this.mActionHandler.sendEmptyMessage(ACTION_SCROLL);
 	 		break;
@@ -219,13 +208,74 @@ public class AlertListView extends ListView{
 	}
 	
 	private void onDown(){
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onDown");
+		this.mStartY = this.mCurrentY;
+		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
+		this.mAdapter.insert(this.mHeadModel, 0);
+		this.mActionHandler.sendEmptyMessageDelayed(ACTION_TOUCH_START, 1);
+	}
+	
+	//handle the single click event
+	private void onSingleClick(){
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onSingleClick");
+		
+		int position = this.pointToPosition(0, this.mCurrentY);
+		if(position == INVALID_POSITION){
+			return ;
+		}
+		AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
+		this.mMainView.onItemClicked(position, view);
+	}
+
+	private void onTouchStart() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onTouchStart");
+		if(this.headView != null){
+			return ;
+		}
+		this.headView = (AlertItemView) this.getChildAt(0);
+		this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
+		this.headContentHeight = this.headView.getMHeight() ;
+	}
+	
+	private void onTouchEnd() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onTouchEnd");
+		if(this.status == CREATE_RELEASE_UP){
+			this.status = CREATE_REFRESH_DONE;
+			this.changeHeaderViewByStatus();
+			this.createNewAlert();
+		}else{
+			this.status = CREATE_REFRESH_DONE;
+			if(this.headView != null){ 
+				changeHeaderViewByStatus();
+				this.headView.hideFastMenu();
+				this.headView.setPadding(0, 0, 0, 0);
+			}
+			this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
+			this.mHeadModel = new AlertItemModel(this.getContext());
+		}
+		this.headView = null;
+	}
+	
+	private void onLongPressStart(){
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onLongPressStart");
+		if(this.headView != null){
+			this.onTouchEnd();
+			this.mActionHandler.sendEmptyMessageDelayed(ACTION_LONG_PRESS_START, 10);
+			return ;
+		}
+		this.status = SEQUENCE;
+		
  		this.mStartY = this.mCurrentY;
  		//prepare for move item after long press
- 		int position = AlertListView.this.pointToPosition(0, this.mCurrentY);
+ 		int position = AlertListView.this.pointToPosition(20, this.mCurrentY);
  		if(position == INVALID_POSITION){
 			return ;
 		}
- 		this.mDragStartPosition = position;
  		this.mDragItemView = (AlertItemView)this.getChildAt(position - this.getFirstVisiblePosition());
 
  		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
@@ -238,43 +288,43 @@ public class AlertListView extends ListView{
  			mLowerBound = Math.max(this.mCurrentY + mTouchSlop, height * 2 / 3);
  			mDragCurrentPostion = position;
  		}
-	}
-	
-	//handle the single click event
-	private void onSingleClick(){
-		int position = this.pointToPosition(0, this.mCurrentY);
-		if(position == INVALID_POSITION){
-			return ;
-		}
-		AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
-		this.mMainView.onItemClicked(position, view);
-	}
-	
-	private void onLongPressStart(){
-		this.mLongPress = true;
-		this.status = SEQUENCE;
+		
 		View itemContent = this.mDragItemView.findViewById(R.id.alert_content);
+		Log.d(TAG, "drag item:" + this.mDragItemView.getContent());
 		itemContent.setDrawingCacheEnabled(true);
 		Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
 		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
 	}
 	
 	private void onLongPressEnd(){
+		// TODO Auto-generated method stub
+		Log.d(TAG, "onLongPressEnd");
 		if(this.mCurrentY > this.getHeight()){
 			this.mMainView.updateDeleteBtnColor(false);
 			this.mMainView.deleteItem(mDragItemView);
 		}
 		stopDrag();
-		this.mDragStartPosition = -1;
 		this.status = CREATE_REFRESH_DONE;
 	}
 	
 	private void onScroll(){
-		
+		// TODO Auto-generated method stub
+
+ 		if(this.mLongPress){
+ 			dragView();
+ 			adjustScrollBounds(this.mCurrentY);
+ 			if(this.mCurrentY > this.getHeight()){
+ 				this.mMainView.updateDeleteBtnColor(true);
+ 			} else this.mMainView.updateDeleteBtnColor(false);
+ 		}
+ 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
+			this.updateCreateStatus();
+		}
 	}
 	
- 	private void updateCreateStatus(int y) {
+ 	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
+ 		int y = this.mCurrentY;
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);
 			if(y-mStartY < 0){
@@ -373,12 +423,12 @@ public class AlertListView extends ListView{
 	}
 	
 
-	private void dragView(int y) {
+	private void dragView() {
 		if(mDragView != null){
-	        mWindowParams.y = y - mDragPointY + mDragOffSetY;
+	        mWindowParams.y = this.mCurrentY - mDragPointY + mDragOffSetY;
 	        mWindowManager.updateViewLayout(mDragView, mWindowParams);
 		}
-		int tempPosition = pointToPosition(0, y);
+		int tempPosition = this.pointToPosition(20, this.mCurrentY);
 		if(tempPosition == INVALID_POSITION){
 			return ;
 		}
@@ -389,9 +439,9 @@ public class AlertListView extends ListView{
 		
 		//滚动
 		int scrollY = 0;
-		if(y < mUpperBound){
+		if(this.mCurrentY < mUpperBound){
 			scrollY = 8;
-		}else if(y > mLowerBound){
+		}else if(this.mCurrentY > mLowerBound){
 			scrollY = -8;
 		}
 		
@@ -472,10 +522,10 @@ public class AlertListView extends ListView{
 	}
 	
 	public void exchangeAdapterItem(int x, int y){
-		Log.i(TAG, "x:" + x);
-		AlertItemModel modelX = this.mAdapter.getItem(x-1);
+		Log.d(TAG, "x:" + x + " y:" + y + "  count:" + this.getCount());
+		AlertItemModel modelX = this.mAdapter.getItem(x);
 		this.mAdapter.remove(modelX);
-		this.mAdapter.insert(modelX, y-1);
+		this.mAdapter.insert(modelX, y);
 	}
 	
 	public void saveSequence(){
@@ -483,7 +533,7 @@ public class AlertListView extends ListView{
 	    if (this.mAdapter != null){
 	    	for (int i = 0; i < this.mAdapter.getCount(); i++)
 	    	{
-	    		AlertItemView mItemView = (AlertItemView)this.getItemAt(i);
+	    		AlertItemView mItemView = (AlertItemView)this.getChildAt(i);
 	    		if (mItemView != null && mItemView.getSequence() != i)
 	    		{
 	    			mItemView.setSequence(i);
