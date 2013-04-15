@@ -204,7 +204,7 @@ public class MainView  extends LinearLayout {
 				AlertItemView mItemView;
 				int count = MainView.this.mListView.getCount();
 				for(int i=0;i<count;i++){
-					mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
+					mItemView = (AlertItemView) MainView.this.mListView.getChildAt(i);
 					if(mItemView != null)
 						mItemView.setTranslucence(false);
 				}
@@ -241,7 +241,7 @@ public class MainView  extends LinearLayout {
 		int firstVisiblePosition =  this.mListView.getFirstVisiblePosition();
 		AlertItemView mItemView;
 		for(int i=0; i<this.mListView.getCount(); i++){
-			mItemView = (AlertItemView) this.mListView.getItemAt(i - firstVisiblePosition);
+			mItemView = (AlertItemView) this.mListView.getChildAt(i - firstVisiblePosition);
 
 			if(mItemView != null){
 				if(mItemView.equals(this.mCurItemView)) continue;
