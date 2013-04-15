@@ -59,8 +59,7 @@ public class AlertListView extends ListView{
 	private int RATIO = 2;
 
 	private AlertListAdapter mAdapter;
-	private AlertItemView headView;
-	private AlertItemModel mHeadModel;
+	private AlertItemView mHeadView;
 	private int headContentHeight;
 	private TextView mTextView;
 	
@@ -86,12 +85,19 @@ public class AlertListView extends ListView{
 	private boolean mStillDown;
 	private boolean mLongPress;
 	
+	private Handler mHeadViewHandler = new Handler(){
+		public void handleMessage(Message message){
+			Log.d(TAG, "mHeadView Handler");
+			mHeadView = (AlertItemView) AlertListView.this.getChildAt(0);
+
+			mTextView = (TextView)mHeadView.findViewById(R.id.tv_content);
+			headContentHeight = mHeadView.getMHeight() ;
+		}
+	};
+	
 	private Handler mActionHandler = new Handler(){
 		public void handleMessage(Message message){
 			switch(message.what){
-			case ACTION_DOWN:
-				onDown();
-				break;
 			case ACTION_SINGLE_CLICK:
 				onSingleClick();
 				break;
@@ -132,16 +138,15 @@ public class AlertListView extends ListView{
 		this.setVerticalScrollBarEnabled(true);
 		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();  
 		this.recored = 1;
-		this.headView = null;
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
 		this.mScroll = true;
 		this.mDragItemView = null;
-		this.setDivider(null);
-		this.mHeadModel = new AlertItemModel(this.getContext());
 		this.mScroll = true;
 		this.initAdapter();
 		
+		this.mAdapter.insert(new AlertItemModel(this.getContext()), 0);
+		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 100);
 	}
 
 	public void initAdapter() {
@@ -160,7 +165,7 @@ public class AlertListView extends ListView{
 		this.setAdapter(this.mAdapter);
 	}
 
-	public boolean onTouchFEvent(MotionEvent event) {
+	public boolean onTouchEvent(MotionEvent event) {
 	 	// TODO Auto-generated method stub
 	 	this.mCurrentY = (int) event.getY();
 	 	this.mCurrentRawY = (int) event.getRawY();
@@ -169,7 +174,7 @@ public class AlertListView extends ListView{
 	 		this.mStillDown = true;
 	 		this.mLongPress = false;
 	 		this.mScroll = false;
-	 		this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
+	 		this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_START);
 	 		this.mActionHandler.sendEmptyMessageDelayed(
 	 				ACTION_LONG_PRESS_START, LONG_PRESS_TIMEOUT);
 	 		break;
@@ -182,7 +187,6 @@ public class AlertListView extends ListView{
 	 			this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_END);
 	 		}else {
 	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-	 			this.onTouchEnd();
 	 			this.mActionHandler.sendEmptyMessageDelayed(ACTION_SINGLE_CLICK, 10);
 	 		}
 	 		this.mLongPress = false;
@@ -191,11 +195,7 @@ public class AlertListView extends ListView{
 	 		int deltaY = this.mCurrentY - this.mStartY;
 	 		if(deltaY * deltaY < TOUCH_SLOP)
 	 			break;
-	 		
-	 		if(!this.mStillDown){
-	 			this.mStillDown = true;
-	 			this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
-	 		}
+
 	 		if(!this.mLongPress && !this.mScroll){
 	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
 		 		this.mScroll = true;
@@ -204,15 +204,6 @@ public class AlertListView extends ListView{
 	 		break;
 	 	}
 	 	return super.onTouchEvent(event);
-	}
-	
-	private void onDown(){
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onDown");
-		this.mStartY = this.mCurrentY;
-		this.mHeadModel.setBgColorId(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
-		this.mAdapter.insert(this.mHeadModel, 0);
-		this.mActionHandler.sendEmptyMessageDelayed(ACTION_TOUCH_START, 1);
 	}
 	
 	//handle the single click event
@@ -231,12 +222,9 @@ public class AlertListView extends ListView{
 	private void onTouchStart() {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onTouchStart");
-		if(this.headView != null){
-			return ;
-		}
-		this.headView = (AlertItemView) this.getChildAt(0);
-		this.mTextView = (TextView)headView.findViewById(R.id.tv_content);
-		this.headContentHeight = this.headView.getMHeight() ;
+		
+		this.mStartY = this.mCurrentY;
+		this.mHeadView.setBgColor(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
 	}
 	
 	private void onTouchEnd() {
@@ -248,24 +236,16 @@ public class AlertListView extends ListView{
 			this.createNewAlert();
 		}else{
 			this.status = CREATE_REFRESH_DONE;
-			if(this.headView != null){ 
+			if(this.mHeadView != null){ 
 				changeHeaderViewByStatus();
-				this.headView.setPadding(0, 0, 0, 0);
+				this.mHeadView.setPadding(0, - this.mHeadView.getMHeight(), 0, 0);
 			}
-			this.mAdapter.remove(((AlertItemView) this.getChildAt(0)).getModel());
-			this.mHeadModel = new AlertItemModel(this.getContext());
 		}
-		this.headView = null;
 	}
 	
 	private void onLongPressStart(){
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onLongPressStart");
-		if(this.headView != null){
-			this.onTouchEnd();
-			this.mActionHandler.sendEmptyMessageDelayed(ACTION_LONG_PRESS_START, 10);
-			return ;
-		}
 		this.status = SEQUENCE;
 		
  		this.mStartY = this.mCurrentY;
@@ -306,7 +286,7 @@ public class AlertListView extends ListView{
 	
 	private void onScroll(){
 		// TODO Auto-generated method stub
-		Log.d(TAG, "onScroll");
+		//Log.d(TAG, "onScroll");
  		if(this.mLongPress){
  			dragView();
  			adjustScrollBounds(this.mCurrentY);
@@ -315,13 +295,12 @@ public class AlertListView extends ListView{
  			} else this.mMainView.updateDeleteBtnColor(false);
  		}
  		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
-			//this.updateCreateStatus();
+			this.updateCreateStatus();
 		}
 	}
 	
  	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
- 		Log.d(TAG, "updateCreateStatus " + this.status);
  		int y = this.mCurrentY;
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);
@@ -336,7 +315,7 @@ public class AlertListView extends ListView{
 				return ;
 			}
 			paddingTop = (y - mStartY) - headContentHeight;
-			headView.setPadding(0, paddingTop / this.RATIO, 
+			mHeadView.setPadding(0, paddingTop / this.RATIO, 
 					0, 0);
 		}
 		else if(this.status == CREATE_PULL_DOWN){
@@ -349,7 +328,7 @@ public class AlertListView extends ListView{
 				changeHeaderViewByStatus();
 			}
 			paddingTop = (y - mStartY) - headContentHeight;
-			headView.setPadding(0, paddingTop / this.RATIO, 
+			mHeadView.setPadding(0, paddingTop / this.RATIO, 
 					0, 0);
 		}
 		else if(this.status == CREATE_REFRESH_DONE){
@@ -380,13 +359,12 @@ public class AlertListView extends ListView{
 	
 	private void createNewAlert() {
 		// TODO Auto-generated method stub
-		this.headView.setPadding(0, 0, 0, 0);
-		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 300);
-		this.mHeadModel = new AlertItemModel(this.getContext());
+		this.mHeadView.setPadding(0, 0, 0, 0);
+		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 100);
 	}
 	
 	public View getItemAt(int index){
-		return super.getChildAt(index+1);
+		return this.getChildAt(index+1);
 	}
 
 	public void startDrag(Bitmap mBitmap, int y){

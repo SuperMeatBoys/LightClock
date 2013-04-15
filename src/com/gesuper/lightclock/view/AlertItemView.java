@@ -75,7 +75,8 @@ public class AlertItemView extends LinearLayout {
 		this.mEditText = (EditText)findViewById(R.id.ed_content);
 		this.mTextView = (TextView)findViewById(R.id.tv_content);
 		this.status = STATUS_NORMAL;
-		
+		this.measureView(this);
+		this.mHeight = this.getMeasuredHeight();
 		this.mEditText.addTextChangedListener(new TextWatcher(){
 			private String shortStr;
 			@Override
@@ -184,12 +185,12 @@ public class AlertItemView extends LinearLayout {
 		}
 
 		this.setBackgroundColor(color);
+
+		this.mItemModel.setBgColorId(colorId);
 	}
 	
 	public void changeBgColor(int colorId){
 		this.setBgColor(colorId);
-		this.mItemModel.setBgColorId(colorId);
-		this.mItemModel.update();
 		
 	}
 	

@@ -51,8 +51,8 @@ public class MainView  extends LinearLayout {
 		
 		public void handleMessage(Message message){
 			MainView.this.mCurItemView.setStatusNormal();
-			MainView.this.mCurItemView.setPadding(0, 0, 0, 0);
-			MainView.this.mListView.removeModel(MainView.this.mCurItemView.getModel());
+			MainView.this.mCurItemView.setPadding(0, - MainView.this.mCurItemView.getHeight(), 0, 0);
+			//MainView.this.mListView.removeModel(MainView.this.mCurItemView.getModel());
 		}
 	};
 	
@@ -172,14 +172,16 @@ public class MainView  extends LinearLayout {
 						new Thread(){
 				        	public void run(){
 				        		int paddingTop = 16; 
-				        		while(paddingTop < MainView.this.mCurItemView.getHeight()){
+				        		while(paddingTop < MainView.this.mCurItemView.getMHeight()){
 				        			MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-paddingTop, paddingTop);
 				        			paddingTop += 16;
 				        		}
-				        		MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-MainView.this.mCurItemView.getHeight(), MainView.this.mCurItemView.getHeight());
-				        		MainView.this.removeHandler.sendEmptyMessageDelayed(0, 200L);
-				        	}
-				        }.start();
+				        		MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-MainView.this.mCurItemView.getMHeight(), MainView.this.mCurItemView.getMHeight());
+				        		
+				        	}};
+				        //}.start();
+				        MainView.this.removeHandler.sendEmptyMessageDelayed(0, 200L);
+				        MainView.this.mCurItemView.endEdit();
 					}
 					else {
 						MainView.this.mCurItemView.endEdit();
@@ -189,7 +191,7 @@ public class MainView  extends LinearLayout {
 				AlertItemView mItemView;
 				int count = MainView.this.mListView.getCount();
 				for(int i=0;i<count;i++){
-					mItemView = (AlertItemView) MainView.this.mListView.getChildAt(i);
+					mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
 					if(mItemView != null)
 						mItemView.setTranslucence(false);
 				}
