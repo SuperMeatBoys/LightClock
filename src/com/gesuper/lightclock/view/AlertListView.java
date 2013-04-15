@@ -160,8 +160,7 @@ public class AlertListView extends ListView{
 		this.setAdapter(this.mAdapter);
 	}
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public boolean onTouchFEvent(MotionEvent event) {
 	 	// TODO Auto-generated method stub
 	 	this.mCurrentY = (int) event.getY();
 	 	this.mCurrentRawY = (int) event.getRawY();
@@ -192,13 +191,13 @@ public class AlertListView extends ListView{
 	 		int deltaY = this.mCurrentY - this.mStartY;
 	 		if(deltaY * deltaY < TOUCH_SLOP)
 	 			break;
+	 		
 	 		if(!this.mStillDown){
 	 			this.mStillDown = true;
 	 			this.mActionHandler.sendEmptyMessage(ACTION_DOWN);
 	 		}
 	 		if(!this.mLongPress && !this.mScroll){
 	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-	 			this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_START);
 		 		this.mScroll = true;
 	 		}
 	 		this.mActionHandler.sendEmptyMessage(ACTION_SCROLL);
@@ -288,10 +287,9 @@ public class AlertListView extends ListView{
  			mDragCurrentPostion = position;
  		}
 		
-		View itemContent = this.mDragItemView.findViewById(R.id.alert_content);
 		Log.d(TAG, "drag item:" + this.mDragItemView.getContent());
-		itemContent.setDrawingCacheEnabled(true);
-		Bitmap bitmap = Bitmap.createBitmap(itemContent.getDrawingCache());
+		this.mDragItemView.setDrawingCacheEnabled(true);
+		Bitmap bitmap = Bitmap.createBitmap(this.mDragItemView.getDrawingCache());
 		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
 	}
 	
@@ -308,7 +306,7 @@ public class AlertListView extends ListView{
 	
 	private void onScroll(){
 		// TODO Auto-generated method stub
-
+		Log.d(TAG, "onScroll");
  		if(this.mLongPress){
  			dragView();
  			adjustScrollBounds(this.mCurrentY);
@@ -317,12 +315,13 @@ public class AlertListView extends ListView{
  			} else this.mMainView.updateDeleteBtnColor(false);
  		}
  		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
-			this.updateCreateStatus();
+			//this.updateCreateStatus();
 		}
 	}
 	
  	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
+ 		Log.d(TAG, "updateCreateStatus " + this.status);
  		int y = this.mCurrentY;
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);

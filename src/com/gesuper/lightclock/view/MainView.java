@@ -92,17 +92,6 @@ public class MainView  extends LinearLayout {
 		// TODO Auto-generated method stub
 		this.mListView = (AlertListView)findViewById(R.id.alert_list);
 		this.mListView.setMainView(this);
-		this.mListView.setOnItemClickListener(new OnItemClickListener(){
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				// TODO Auto-generated method stub
-				if(view instanceof AlertItemView){
-					MainView.this.onItemClicked(position, (AlertItemView) view);
-				}
-			}
-
-		});
 
 		this.mDelete = (TextView)findViewById(R.id.alert_delete);
 		

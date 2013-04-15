@@ -2,14 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="10dip" >
-        
-    <RelativeLayout 
-        android:id="@+id/alert_content"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        >
+    android:layout_height="wrap_content" >
         
         <TextView 
             android:id="@+id/tv_content"
@@ -17,7 +10,7 @@
             android:layout_height="wrap_content"
             android:textSize="20.0sp"
             android:padding="14dip"
-            android:textIsSelectable="true" 
+            android:textIsSelectable="false" 
 	        android:background="@null" 
             android:maxLines="3"
         />
@@ -28,12 +21,8 @@
             android:padding="14dip"
             android:maxLines="3"
         	android:visibility="gone" 
-        	android:textIsSelectable="true"
 	        android:background="@null" 
 	        android:scrollHorizontally="false"
             android:inputType="textMultiLine" 
 	        android:imeOptions="actionDone"/>
-        
-    </RelativeLayout>
-    <TextView></TextView>
 </LinearLayout>

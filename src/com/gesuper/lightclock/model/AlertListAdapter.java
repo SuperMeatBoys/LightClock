@@ -1,5 +1,6 @@
 package com.gesuper.lightclock.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.gesuper.lightclock.view.AlertItemView;
@@ -13,21 +14,21 @@ import android.widget.ArrayAdapter;
 
 public class AlertListAdapter extends ArrayAdapter<AlertItemModel> {
 	public static final String TAG = "AlertListAdapter";
-	
+	private ArrayList<AlertItemView> mViewArray;
 	public AlertListAdapter(Context context, int resource, List<AlertItemModel> objects) {
 		super(context, resource, objects);
 		// TODO Auto-generated constructor stub
+		this.mViewArray = new ArrayList<AlertItemView>();
 	}
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent){
 		AlertItemView mItemView;
-		if (convertView != null) {
-			mItemView = (AlertItemView)convertView;
+		if(convertView != null){
+			mItemView = (AlertItemView) convertView;
 		}
-		else {
-			mItemView  = new AlertItemView(this.getContext());
-		}
+		else mItemView  = new AlertItemView(this.getContext());
+		
 		AlertItemModel mItemModel = getItem(position);
 		mItemView.setModel(mItemModel);
 		if(mItemView.getModel().getId() == -1){

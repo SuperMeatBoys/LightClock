@@ -47,7 +47,6 @@ public class AlertItemView extends LinearLayout {
 	private AlphaAnimation mAlphaAnimation;
 	private int status;
 	
-	private RelativeLayout mContent;
 	private EditText mEditText;
 	private TextView mTextView;
 	
@@ -73,7 +72,6 @@ public class AlertItemView extends LinearLayout {
 	private void initResource() {
 		// TODO Auto-generated method stub
 		this.mHeight = 0;
-		this.mContent = (RelativeLayout)findViewById(R.id.alert_content);
 		this.mEditText = (EditText)findViewById(R.id.ed_content);
 		this.mTextView = (TextView)findViewById(R.id.tv_content);
 		this.status = STATUS_NORMAL;
@@ -164,7 +162,7 @@ public class AlertItemView extends LinearLayout {
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_TITLE, "Share my alert...");
-		intent.putExtra(Intent.EXTRA_TEXT, "I have a event to share: " + this.mItemModel.getContent() + "\nFrom lightclock");
+		intent.putExtra(Intent.EXTRA_TEXT, this.mItemModel.getContent() + "\nFrom lightclock");
 		this.getContext().startActivity(Intent.createChooser(intent, "Share"));
 	}
 	
@@ -185,7 +183,7 @@ public class AlertItemView extends LinearLayout {
 			break;
 		}
 
-		this.mContent.setBackgroundColor(color);
+		this.setBackgroundColor(color);
 	}
 	
 	public void changeBgColor(int colorId){

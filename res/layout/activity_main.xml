@@ -4,10 +4,7 @@
     android:layout_height="fill_parent"
     tools:context=".MainActivity" 
     android:background="@drawable/bg_repeat"
-    android:orientation="vertical"
-    android:paddingLeft="9dip"
-    android:paddingRight="9dip"
-    android:paddingTop="12dip">
+    android:orientation="vertical">
 
     <com.gesuper.lightclock.view.AlertListView 
         android:id="@+id/alert_list"
