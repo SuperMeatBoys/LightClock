@@ -3,7 +3,10 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
-        
+        <RelativeLayout 
+            android:id="@+id/alert_content"
+            android:layout_width="match_parent"
+    		android:layout_height="wrap_content">
         <TextView 
             android:id="@+id/tv_content"
             android:layout_width="fill_parent"
@@ -31,4 +34,8 @@
 	        android:scrollHorizontally="false"
             android:inputType="textMultiLine" 
 	        android:imeOptions="actionDone"/>
+        </RelativeLayout>
+        <TextView 
+            android:layout_width="match_parent"
+    		android:layout_height="0dip"/>
 </LinearLayout>

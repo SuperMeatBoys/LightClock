@@ -40,7 +40,6 @@ public class AlertListView extends ListView{
 	public static final int CREATE_REFRESH_DONE = 3;
 	public static final int SEQUENCE = 4;
 	
-	public static final int ACTION_DOWN = 0;
 	public static final int ACTION_SINGLE_CLICK = 1;
 	public static final int ACTION_TOUCH_START = 2;
 	public static final int ACTION_TOUCH_END = 3;
@@ -48,16 +47,15 @@ public class AlertListView extends ListView{
 	public static final int ACTION_LONG_PRESS_END = 5;
 	public static final int ACTION_SCROLL = 6;
 	
+	private int RATIO = 2;
+	
 	private MainView mMainView;
-	private int recored;
 	private int mStartY;
 	private int mCurrentY;
 	private int mCurrentRawY;
 	private int status;
-	private int paddingTop;
 	
-	private int RATIO = 2;
-
+	ArrayList<AlertItemModel> mAlertListArray;
 	private AlertListAdapter mAdapter;
 	private AlertItemView mHeadView;
 	private int headContentHeight;
@@ -69,7 +67,7 @@ public class AlertListView extends ListView{
 	private ImageView mDragView;
 	
     private AlertItemView mDragItemView;
-	//当前的位置
+	
 	private int mDragCurrentPostion;
 	private int mDragOffSetY;
 	//移动的位置
@@ -136,8 +134,7 @@ public class AlertListView extends ListView{
 	public void initListView(){
 		//hide scroll bar
 		this.setVerticalScrollBarEnabled(true);
-		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();  
-		this.recored = 1;
+		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
 		this.mScroll = true;
@@ -145,13 +142,12 @@ public class AlertListView extends ListView{
 		this.mScroll = true;
 		this.initAdapter();
 		
-		this.mAdapter.insert(new AlertItemModel(this.getContext()), 0);
 		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 100);
 	}
 
 	public void initAdapter() {
 		// TODO Auto-generated method stub
-		ArrayList<AlertItemModel> mAlertListArray  = new ArrayList<AlertItemModel>();
+		mAlertListArray  = new ArrayList<AlertItemModel>();
 		AlertItemModel mAlertItem;
 		DBHelperModel dbHelper = DBHelperModel.getInstance(this.getContext());
 		Cursor cursor = dbHelper.query(AlertItemModel.mColumns, null, null, AlertItemModel.SEQUENCE + " asc");
@@ -159,6 +155,7 @@ public class AlertListView extends ListView{
 			mAlertItem = new AlertItemModel(this.getContext(), cursor);
 			mAlertListArray.add(mAlertItem);
 		}
+		this.mAlertListArray.add(0, new AlertItemModel(this.getContext()));
 		this.mAdapter = new AlertListAdapter(this.getContext(), R.layout.activity_alert_item,
 				mAlertListArray);
 		Log.d(TAG, "set adapter");
@@ -294,7 +291,7 @@ public class AlertListView extends ListView{
  				this.mMainView.updateDeleteBtnColor(true);
  			} else this.mMainView.updateDeleteBtnColor(false);
  		}
- 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
+ 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0 && this.mStillDown){
 			this.updateCreateStatus();
 		}
 	}
@@ -302,6 +299,7 @@ public class AlertListView extends ListView{
  	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
  		int y = this.mCurrentY;
+ 		int paddingTop;
 		if(this.status == CREATE_RELEASE_UP){
 			setSelection(0);
 			if(y-mStartY < 0){
@@ -361,10 +359,12 @@ public class AlertListView extends ListView{
 		// TODO Auto-generated method stub
 		this.mHeadView.getModel().setId((long) -2);
 		this.mHeadView.setPadding(0, 0, 0, 0);
-		this.mAdapter.insert(new AlertItemModel(this.getContext()), 0);
+		this.mAlertListArray.add(0, new AlertItemModel(this.getContext()));
+		this.mAdapter.notifyDataSetChanged();
+		
 		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 200);
 		
-		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 100);
+		this.mMainView.createHandler.sendEmptyMessageDelayed(1, 100);
 		
 	}
 	
@@ -504,9 +504,10 @@ public class AlertListView extends ListView{
 	
 	public void exchangeAdapterItem(int x, int y){
 		Log.d(TAG, "x:" + x + " y:" + y + "  count:" + this.getCount());
-		AlertItemModel modelX = this.mAdapter.getItem(x);
-		this.mAdapter.remove(modelX);
-		this.mAdapter.insert(modelX, y);
+		AlertItemModel model = this.mAlertListArray.get(x);
+		this.mAlertListArray.set(x, this.mAlertListArray.get(y));
+		this.mAlertListArray.set(y, model);
+		this.mAdapter.notifyDataSetChanged();
 	}
 	
 	public void saveSequence(){
@@ -526,6 +527,7 @@ public class AlertListView extends ListView{
 
 	public void removeModel(AlertItemModel model) {
 		// TODO Auto-generated method stub
-		this.mAdapter.remove(model);
+		this.mAlertListArray.remove(model);
+		this.mAdapter.notifyDataSetChanged();
 	}
 }

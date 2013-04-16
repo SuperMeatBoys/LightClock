@@ -46,7 +46,7 @@ public class AlertItemView extends LinearLayout {
 	private AlertItemModel mItemModel;
 	private AlphaAnimation mAlphaAnimation;
 	private int status;
-	
+	private RelativeLayout mContent;
 	private EditText mEditText;
 	private TextView mTextView;
 	
@@ -72,6 +72,7 @@ public class AlertItemView extends LinearLayout {
 	private void initResource() {
 		// TODO Auto-generated method stub
 		this.mHeight = 0;
+		this.mContent = (RelativeLayout)findViewById(R.id.alert_content);
 		this.mEditText = (EditText)findViewById(R.id.ed_content);
 		this.mTextView = (TextView)findViewById(R.id.tv_content);
 		this.status = STATUS_NORMAL;
@@ -184,7 +185,7 @@ public class AlertItemView extends LinearLayout {
 			break;
 		}
 
-		this.setBackgroundColor(color);
+		this.mContent.setBackgroundColor(color);
 
 		this.mItemModel.setBgColorId(colorId);
 	}
