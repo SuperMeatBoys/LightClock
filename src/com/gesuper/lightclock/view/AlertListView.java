@@ -23,8 +23,10 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class AlertListView extends ListView{
@@ -82,6 +84,8 @@ public class AlertListView extends ListView{
 	private boolean mScroll;
 	private boolean mStillDown;
 	private boolean mLongPress;
+	
+	private int mScrollY;
 	
 	private Handler mHeadViewHandler = new Handler(){
 		public void handleMessage(Message message){
@@ -141,7 +145,7 @@ public class AlertListView extends ListView{
 		this.mDragItemView = null;
 		this.mScroll = true;
 		this.initAdapter();
-		
+		this.setSmoothScrollbarEnabled(true);
 		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 100);
 	}
 
@@ -207,19 +211,19 @@ public class AlertListView extends ListView{
 	private void onSingleClick(){
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onSingleClick");
-		
-		int position = this.pointToPosition(0, this.mCurrentY);
+		final int position = this.pointToPosition(0, this.mCurrentY);
 		if(position == INVALID_POSITION){
 			return ;
 		}
 		AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
+		this.mScrollY = this.getScrollY();
+		this.scrollTo(0, view.getTop());
 		this.mMainView.onItemClicked(position, view);
 	}
 
 	private void onTouchStart() {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "onTouchStart");
-		
 		this.mStartY = this.mCurrentY;
 		this.mHeadView.setBgColor(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
 	}
@@ -295,7 +299,16 @@ public class AlertListView extends ListView{
 			this.updateCreateStatus();
 		}
 	}
+
+	public void onItemEditStart(){
+		// TODO Auto-generated method stub
+		
+	}
 	
+	public void onItemEditEnd() {
+		// TODO Auto-generated method stub
+		this.scrollTo(0, mScrollY);
+	}
  	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
  		int y = this.mCurrentY;
@@ -428,13 +441,11 @@ public class AlertListView extends ListView{
 		
 		if(scrollY != 0){
 			int top = this.getChildAt(mDragCurrentPostion - this.getFirstVisiblePosition()).getTop();
-			setSelectionFromTop(mDragCurrentPostion, top + scrollY);
+			this.setSelectionFromTop(mDragCurrentPostion, top + scrollY);
 		}
 		
     }
 
-
-	
 	public void stopDrag(){
 		this.mMainView.setDeleteVisible(false);
 		if (mDragView != null) {
@@ -470,7 +481,7 @@ public class AlertListView extends ListView{
             }
         }
         if (speed != 0) {
-            smoothScrollBy(speed, 30);
+            this.smoothScrollBy(speed, 30);
         }
     }
 	
@@ -530,4 +541,5 @@ public class AlertListView extends ListView{
 		this.mAlertListArray.remove(model);
 		this.mAdapter.notifyDataSetChanged();
 	}
+
 }

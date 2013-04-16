@@ -68,12 +68,6 @@ public class MainView  extends LinearLayout {
 			MainView.this.mCurItemView.startEdit(false);
 		}
 	};
-	//private Handler scrollHandler = new Handler(){
-	//	public void handleMessage(Message message){
-	//		
-	//		MainView.this.mListView.setSelection(message.what);
-	//	}
-	//};
 	
 	public MainView(Context context) {
 		super(context);
@@ -96,11 +90,11 @@ public class MainView  extends LinearLayout {
 		this.mListView.initListView();
 	}
 	
-	public void onItemClicked(int position, AlertItemView view){
+	public void onItemClicked(final int position, AlertItemView view){
 		MainView.this.mCurItemView = view;
 		if(MainView.this.mListView.isRecored()) return;
 		if(MainView.this.mCurItemView.getStatus() != AlertItemView.STATUS_NORMAL) return ;
-		MainView.this.editHandler.sendEmptyMessageDelayed(position, 50);
+		MainView.this.editHandler.sendEmptyMessageDelayed(position, 100);
 	}
 	
 	public void beforeAddItem() {
@@ -182,15 +176,16 @@ public class MainView  extends LinearLayout {
 					}
 					else {
 						MainView.this.mCurItemView.endEdit();
-						
+						MainView.this.mListView.onItemEditEnd();
 					}
-				}
-				AlertItemView mItemView;
-				int count = MainView.this.mListView.getCount();
-				for(int i=0;i<count;i++){
-					mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
-					if(mItemView != null)
-						mItemView.setTranslucence(false);
+
+					AlertItemView mItemView;
+					int count = MainView.this.mListView.getCount();
+					for(int i=0;i<count;i++){
+						mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
+						if(mItemView != null)
+							mItemView.setTranslucence(false);
+					}
 				}
 			}
 			
