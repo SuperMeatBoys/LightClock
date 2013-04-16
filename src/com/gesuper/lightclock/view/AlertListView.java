@@ -359,8 +359,13 @@ public class AlertListView extends ListView{
 	
 	private void createNewAlert() {
 		// TODO Auto-generated method stub
+		this.mHeadView.getModel().setId((long) -2);
 		this.mHeadView.setPadding(0, 0, 0, 0);
+		this.mAdapter.insert(new AlertItemModel(this.getContext()), 0);
+		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 200);
+		
 		this.mMainView.createHandler.sendEmptyMessageDelayed(0, 100);
+		
 	}
 	
 	public View getItemAt(int index){

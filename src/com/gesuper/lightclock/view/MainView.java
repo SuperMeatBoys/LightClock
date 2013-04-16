@@ -40,7 +40,7 @@ public class MainView  extends LinearLayout {
 			
 			final int position = message.what;
 			MainView.this.mCurItemView = 
-					(AlertItemView) MainView.this.mListView.getChildAt(position);
+					(AlertItemView) MainView.this.mListView.getItemAt(position);
 			MainView.this.mCurItemView.setVisibility(View.VISIBLE);
 			MainView.this.createTopRectView(position);
 			MainView.this.mCurItemView.startEdit(true);
@@ -51,8 +51,8 @@ public class MainView  extends LinearLayout {
 		
 		public void handleMessage(Message message){
 			MainView.this.mCurItemView.setStatusNormal();
-			MainView.this.mCurItemView.setPadding(0, - MainView.this.mCurItemView.getHeight(), 0, 0);
-			//MainView.this.mListView.removeModel(MainView.this.mCurItemView.getModel());
+			MainView.this.mCurItemView.setPadding(0, 0, 0, 0);
+			MainView.this.mListView.removeModel(((AlertItemView) MainView.this.mListView.getItemAt(0)).getModel());
 		}
 	};
 	
@@ -177,10 +177,10 @@ public class MainView  extends LinearLayout {
 				        			paddingTop += 16;
 				        		}
 				        		MainView.this.removeAnimationHandler.sendEmptyMessageDelayed(-MainView.this.mCurItemView.getMHeight(), MainView.this.mCurItemView.getMHeight());
-				        		
-				        	}};
-				        //}.start();
-				        MainView.this.removeHandler.sendEmptyMessageDelayed(0, 200L);
+
+						        MainView.this.removeHandler.sendEmptyMessageDelayed(0, 200L);
+				        	}
+				        }.start();
 				        MainView.this.mCurItemView.endEdit();
 					}
 					else {
