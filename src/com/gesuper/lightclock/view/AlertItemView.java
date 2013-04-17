@@ -127,6 +127,7 @@ public class AlertItemView extends LinearLayout {
 	}
 	
 	public void startEdit(boolean isCreate){
+		Log.d(TAG, "startEdit");
 		if(this.status != STATUS_NORMAL)
 			return ;
 		if(isCreate)

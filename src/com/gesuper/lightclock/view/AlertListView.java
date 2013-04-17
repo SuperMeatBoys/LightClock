@@ -8,6 +8,8 @@ import com.gesuper.lightclock.model.AlertItemModel;
 import com.gesuper.lightclock.model.AlertListAdapter;
 import com.gesuper.lightclock.model.BgColor;
 import com.gesuper.lightclock.model.DBHelperModel;
+import com.gesuper.lightclock.model.MyGesture;
+import com.gesuper.lightclock.model.MyGesture.OnGestureListener;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -23,13 +25,12 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.TranslateAnimation;
+import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class AlertListView extends ListView{
+public class AlertListView extends ListView implements OnTouchListener, OnGestureListener{
 
 	public static final String TAG = "AlertListView";
 	@SuppressWarnings("deprecation")
@@ -50,6 +51,8 @@ public class AlertListView extends ListView{
 	public static final int ACTION_SCROLL = 6;
 	
 	private int RATIO = 2;
+	
+	private MyGesture mGesture;
 	
 	private MainView mMainView;
 	private int mStartY;
@@ -82,7 +85,6 @@ public class AlertListView extends ListView{
 	private int mHeight;
 	private int mTouchSlop;
 	private boolean mScroll;
-	private boolean mStillDown;
 	private boolean mLongPress;
 	
 	private int mScrollY;
@@ -97,38 +99,6 @@ public class AlertListView extends ListView{
 		}
 	};
 	
-	private Handler mActionHandler = new Handler(){
-		public void handleMessage(Message message){
-			switch(message.what){
-			case ACTION_SINGLE_CLICK:
-				onSingleClick();
-				break;
-			case ACTION_TOUCH_START:
-				onTouchStart();
-				break;
-			case ACTION_TOUCH_END:
-				if(mScroll == true){
-					onTouchEnd();
-				}
-				break;
-			case ACTION_LONG_PRESS_START:
-				if(mStillDown){
-					mLongPress = true;
-					onLongPressStart();
-				}
-				break;
-			case ACTION_LONG_PRESS_END:
-				mLongPress = false;
-				onLongPressEnd();
-				break;
-			case ACTION_SCROLL:
-				onScroll();
-				break;
-			}
-		}
-
-	};
-	
 	public AlertListView(Context context, AttributeSet attrs) {
 	    super(context, attrs);
 	    // TODO Auto-generated constructor stub
@@ -138,13 +108,17 @@ public class AlertListView extends ListView{
 	public void initListView(){
 		//hide scroll bar
 		this.setVerticalScrollBarEnabled(true);
+		this.mGesture = new MyGesture(this.getContext(), this, null);
+		this.mGesture.setIsLongpressEnabled(true);
 		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
 		this.mScroll = true;
 		this.mDragItemView = null;
-		this.mScroll = true;
+		this.mLongPress = false;
+		this.mScroll = false;
 		this.initAdapter();
+		this.setOnTouchListener(this);
 		this.setSmoothScrollbarEnabled(true);
 		this.mHeadViewHandler.sendEmptyMessageDelayed(0, 100);
 	}
@@ -165,145 +139,6 @@ public class AlertListView extends ListView{
 		Log.d(TAG, "set adapter");
 		this.setAdapter(this.mAdapter);
 	}
-
-	public boolean onTouchEvent(MotionEvent event) {
-	 	// TODO Auto-generated method stub
-	 	this.mCurrentY = (int) event.getY();
-	 	this.mCurrentRawY = (int) event.getRawY();
-	 	switch(event.getAction()){
-	 	case MotionEvent.ACTION_DOWN:
-	 		this.mStillDown = true;
-	 		this.mLongPress = false;
-	 		this.mScroll = false;
-	 		this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_START);
-	 		this.mActionHandler.sendEmptyMessageDelayed(
-	 				ACTION_LONG_PRESS_START, LONG_PRESS_TIMEOUT);
-	 		break;
-	 	case MotionEvent.ACTION_UP:
-	 		this.mStillDown = false;
-	 		if(this.mLongPress){
-	 			this.mActionHandler.sendEmptyMessage(ACTION_LONG_PRESS_END);
-	 		} else if(this.mScroll){
-	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-	 			this.mActionHandler.sendEmptyMessage(ACTION_TOUCH_END);
-	 		}else {
-	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-	 			this.mActionHandler.sendEmptyMessageDelayed(ACTION_SINGLE_CLICK, 10);
-	 		}
-	 		this.mLongPress = false;
-	 		break;
-	 	case MotionEvent.ACTION_MOVE:
-	 		int deltaY = this.mCurrentY - this.mStartY;
-	 		if(deltaY * deltaY < TOUCH_SLOP)
-	 			break;
-
-	 		if(!this.mLongPress && !this.mScroll){
-	 			this.mActionHandler.removeMessages(ACTION_LONG_PRESS_START);
-		 		this.mScroll = true;
-	 		}
-	 		this.mActionHandler.sendEmptyMessage(ACTION_SCROLL);
-	 		break;
-	 	}
-	 	return super.onTouchEvent(event);
-	}
-	
-	//handle the single click event
-	private void onSingleClick(){
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onSingleClick");
-		final int position = this.pointToPosition(0, this.mCurrentY);
-		if(position == INVALID_POSITION){
-			return ;
-		}
-		AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
-		this.mScrollY = this.getScrollY();
-		this.scrollTo(0, view.getTop());
-		this.mMainView.onItemClicked(position, view);
-	}
-
-	private void onTouchStart() {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onTouchStart");
-		this.mStartY = this.mCurrentY;
-		this.mHeadView.setBgColor(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
-	}
-	
-	private void onTouchEnd() {
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onTouchEnd");
-		if(this.status == CREATE_RELEASE_UP){
-			this.status = CREATE_REFRESH_DONE;
-			this.changeHeaderViewByStatus();
-			this.createNewAlert();
-		}else{
-			this.status = CREATE_REFRESH_DONE;
-			if(this.mHeadView != null){ 
-				changeHeaderViewByStatus();
-				this.mHeadView.setPadding(0, - this.mHeadView.getMHeight(), 0, 0);
-			}
-		}
-	}
-	
-	private void onLongPressStart(){
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onLongPressStart");
-		this.status = SEQUENCE;
-		
- 		this.mStartY = this.mCurrentY;
- 		//prepare for move item after long press
- 		int position = AlertListView.this.pointToPosition(20, this.mCurrentY);
- 		if(position == INVALID_POSITION){
-			return ;
-		}
- 		this.mDragItemView = (AlertItemView)this.getChildAt(position - this.getFirstVisiblePosition());
-
- 		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
- 			this.mDragPointX = 9;
- 			this.mDragPointY = this.mCurrentY - mDragItemView.getTop();
- 			this.mDragOffSetY = (int) (this.mCurrentRawY - this.mCurrentY);
-			
- 			int height = getHeight();
- 			mUpperBound = Math.min(this.mCurrentY - mTouchSlop, height / 3);
- 			mLowerBound = Math.max(this.mCurrentY + mTouchSlop, height * 2 / 3);
- 			mDragCurrentPostion = position;
- 		}
-		
-		Log.d(TAG, "drag item:" + this.mDragItemView.getContent());
-		this.mDragItemView.setDrawingCacheEnabled(true);
-		Bitmap bitmap = Bitmap.createBitmap(this.mDragItemView.getDrawingCache());
-		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
-	}
-	
-	private void onLongPressEnd(){
-		// TODO Auto-generated method stub
-		Log.d(TAG, "onLongPressEnd");
-		if(this.mCurrentY > this.getHeight()){
-			this.mMainView.updateDeleteBtnColor(false);
-			this.mMainView.deleteItem(mDragItemView);
-		}
-		stopDrag();
-		this.status = CREATE_REFRESH_DONE;
-	}
-	
-	private void onScroll(){
-		// TODO Auto-generated method stub
-		//Log.d(TAG, "onScroll");
- 		if(this.mLongPress){
- 			dragView();
- 			adjustScrollBounds(this.mCurrentY);
- 			if(this.mCurrentY > this.getHeight()){
- 				this.mMainView.updateDeleteBtnColor(true);
- 			} else this.mMainView.updateDeleteBtnColor(false);
- 		}
- 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0 && this.mStillDown){
-			this.updateCreateStatus();
-		}
-	}
-
-	public void onItemEditStart(){
-		// TODO Auto-generated method stub
-		
-	}
 	
 	public void onItemEditEnd() {
 		// TODO Auto-generated method stub
@@ -311,6 +146,7 @@ public class AlertListView extends ListView{
 	}
  	private void updateCreateStatus() {
 		// TODO Auto-generated method stub
+ 		Log.d(TAG, "updateCreateStatus");
  		int y = this.mCurrentY;
  		int paddingTop;
 		if(this.status == CREATE_RELEASE_UP){
@@ -540,6 +376,121 @@ public class AlertListView extends ListView{
 		// TODO Auto-generated method stub
 		this.mAlertListArray.remove(model);
 		this.mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public boolean onDown(MotionEvent e) {
+		// TODO Auto-generated method stub
+		this.mStartY = this.mCurrentY;
+		this.mHeadView.setBgColor(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent e) {
+		// TODO Auto-generated method stub
+		if(this.mLongPress){
+			if(this.mCurrentY > this.getHeight()){
+				this.mMainView.updateDeleteBtnColor(false);
+				this.mMainView.deleteItem(mDragItemView);
+			}
+			stopDrag();
+			this.status = CREATE_REFRESH_DONE;
+			this.mLongPress = false;
+		} else if(this.mScroll){
+			if(this.status == CREATE_RELEASE_UP){
+				this.status = CREATE_REFRESH_DONE;
+				this.changeHeaderViewByStatus();
+				this.createNewAlert();
+			}else{
+				this.status = CREATE_REFRESH_DONE;
+				if(this.mHeadView != null){ 
+					changeHeaderViewByStatus();
+					this.mHeadView.setPadding(0, - this.mHeadView.getMHeight(), 0, 0);
+				}
+			}
+			this.mScroll = false;
+		} else {
+			int position = this.pointToPosition(0, this.mCurrentY);
+			if(position == INVALID_POSITION){
+				return false;
+			}
+			AlertItemView view = (AlertItemView) this.getChildAt(position - this.getFirstVisiblePosition());
+			this.mScrollY = this.getScrollY();
+			this.scrollTo(0, view.getTop());
+			this.mMainView.onItemClicked(position, view);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+			float distanceY) {
+		// TODO Auto-generated method stub
+		this.mScroll = true;
+		if(this.mLongPress){
+ 			dragView();
+ 			adjustScrollBounds(this.mCurrentY);
+ 			if(this.mCurrentY > this.getHeight()){
+ 				this.mMainView.updateDeleteBtnColor(true);
+ 			} else this.mMainView.updateDeleteBtnColor(false);
+ 		}
+ 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
+			this.updateCreateStatus();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean onLongPress(MotionEvent e) {
+		// TODO Auto-generated method stub
+		this.status = SEQUENCE;
+		this.mLongPress = true;
+ 		this.mStartY = this.mCurrentY;
+ 		//prepare for move item after long press
+ 		int position = AlertListView.this.pointToPosition(20, this.mCurrentY);
+ 		if(position == INVALID_POSITION){
+			return false;
+		}
+ 		this.mDragItemView = (AlertItemView)this.getChildAt(position - this.getFirstVisiblePosition());
+
+ 		if(mDragItemView.getStatus() == AlertItemView.STATUS_NORMAL){
+ 			this.mDragPointX = 9;
+ 			this.mDragPointY = this.mCurrentY - mDragItemView.getTop();
+ 			this.mDragOffSetY = (int) (this.mCurrentRawY - this.mCurrentY);
+			
+ 			int height = getHeight();
+ 			mUpperBound = Math.min(this.mCurrentY - mTouchSlop, height / 3);
+ 			mLowerBound = Math.max(this.mCurrentY + mTouchSlop, height * 2 / 3);
+ 			mDragCurrentPostion = position;
+ 		}
+		
+		Log.d(TAG, "drag item:" + this.mDragItemView.getContent());
+		this.mDragItemView.setDrawingCacheEnabled(true);
+		Bitmap bitmap = Bitmap.createBitmap(this.mDragItemView.getDrawingCache(true));
+		this.mDragItemView.setDrawingCacheEnabled(false);
+		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
+		return false;
+	}
+
+	@Override
+	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+			float velocityY) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		// TODO Auto-generated method stub
+		this.mCurrentY = (int) event.getY();
+	 	this.mCurrentRawY = (int) event.getRawY();
+		return this.mGesture.onTouchEvent(event);
 	}
 
 }

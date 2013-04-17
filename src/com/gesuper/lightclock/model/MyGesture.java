@@ -20,7 +20,7 @@ public class MyGesture {
 
         boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY);
 
-        void onLongPress(MotionEvent e);
+        boolean onLongPress(MotionEvent e);
 
         boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY);
     }
@@ -30,7 +30,8 @@ public class MyGesture {
             return false;
         }
 
-        public void onLongPress(MotionEvent e) {
+        public boolean onLongPress(MotionEvent e) {
+        	return false;
         }
 
         public boolean onScroll(MotionEvent e1, MotionEvent e2,
@@ -47,14 +48,6 @@ public class MyGesture {
         }
 
         public boolean onDown(MotionEvent e) {
-            return false;
-        }
-
-        public boolean onDoubleTap(MotionEvent e) {
-            return false;
-        }
-
-        public boolean onDoubleTapEvent(MotionEvent e) {
             return false;
         }
 
@@ -333,9 +326,9 @@ public class MyGesture {
             break;
 
         case MotionEvent.ACTION_MOVE:
-            if (mInLongPress || (mIgnoreMultitouch && ev.getPointerCount() > 1)) {
-                break;
-            }
+            //if (mInLongPress || (mIgnoreMultitouch && ev.getPointerCount() > 1)) {
+            //    break;
+            //}
             final float scrollX = mLastMotionX - x;
             final float scrollY = mLastMotionY - y;
             if (mAlwaysInTapRegion) {
@@ -364,10 +357,8 @@ public class MyGesture {
             if (mInLongPress) {
                 mHandler.removeMessages(TAP);
                 mInLongPress = false;
-            } else if (mAlwaysInTapRegion) {
-                handled = mListener.onSingleTapUp(ev);
-            } else {
-
+            }else {
+                
                 // A fling must travel the minimum tap distance
                 final VelocityTracker velocityTracker = mVelocityTracker;
                 velocityTracker.computeCurrentVelocity(1000, mMaximumFlingVelocity);
@@ -379,6 +370,8 @@ public class MyGesture {
                     handled = mListener.onFling(mCurrentDownEvent, ev, velocityX, velocityY);
                 }
             }
+
+            handled = mListener.onSingleTapUp(ev);
             if (mPreviousUpEvent != null) {
                 mPreviousUpEvent.recycle();
             }
@@ -415,9 +408,9 @@ public class MyGesture {
         }
     }
 
-    private void dispatchLongPress() {
+    private boolean dispatchLongPress() {
         mHandler.removeMessages(TAP);
         mInLongPress = true;
-        mListener.onLongPress(mCurrentDownEvent);
+        return mListener.onLongPress(mCurrentDownEvent);
     }
 }

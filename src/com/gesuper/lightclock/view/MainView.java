@@ -182,7 +182,7 @@ public class MainView  extends LinearLayout {
 					AlertItemView mItemView;
 					int count = MainView.this.mListView.getCount();
 					for(int i=0;i<count;i++){
-						mItemView = (AlertItemView) MainView.this.mListView.getItemAt(i);
+						mItemView = (AlertItemView) MainView.this.mListView.getChildAt(i);
 						if(mItemView != null)
 							mItemView.setTranslucence(false);
 					}
