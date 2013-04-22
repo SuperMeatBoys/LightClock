@@ -42,6 +42,7 @@ public class AlertItemView extends LinearLayout {
 	public static final int STATUS_DOWN = 2;
 	public static final int STATUS_MOVE = 3;
 	public static final int STATUS_CREATE = 4;
+	public static final int STATUS_FINISH = 5;
 	
 	private AlertItemModel mItemModel;
 	private AlphaAnimation mAlphaAnimation;
