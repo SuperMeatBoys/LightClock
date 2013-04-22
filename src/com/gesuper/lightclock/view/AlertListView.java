@@ -57,7 +57,9 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	private MyGesture mGesture;
 	
 	private MainView mMainView;
+	private int mStartX;
 	private int mStartY;
+	private int mCurrentX;
 	private int mCurrentY;
 	private int mCurrentRawY;
 	private int status;
@@ -146,7 +148,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 		// TODO Auto-generated method stub
 		this.scrollTo(0, mScrollY);
 	}
- 	private void updateCreateStatus() {
+ 	private void updateHeadViewStatus() {
 		// TODO Auto-generated method stub
  		Log.d(TAG, "updateCreateStatus");
  		int y = this.mCurrentY;
@@ -181,11 +183,16 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 					0, 0);
 		}
 		else if(this.status == CREATE_REFRESH_DONE){
-			if(y - mStartY > 0){
+			if(y - mStartY > 50){
 				this.status = CREATE_PULL_DOWN;
 				changeHeaderViewByStatus();
 			}
 		}
+	}
+ 	
+	private void updateItemStatus(AlertItemView mItemView) {
+		// TODO Auto-generated method stub
+		this.setPadding(this.mCurrentX - this.mStartX, 0, 0, 0);
 	}
 
 	private void changeHeaderViewByStatus() {
@@ -407,6 +414,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	@Override
 	public boolean onDown(MotionEvent e) {
 		// TODO Auto-generated method stub
+		this.mStartX = this.mCurrentX;
 		this.mStartY = this.mCurrentY;
 		this.mHeadView.setBgColor(new Random().nextInt(BgColor.COLOR_COUNT) + 1);
 		return false;
@@ -466,8 +474,18 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
  				this.mMainView.updateDeleteBtnColor(true);
  			} else this.mMainView.updateDeleteBtnColor(false);
  		}
- 		else if(this.status != NORMAL && this.getFirstVisiblePosition() == 0){
-			this.updateCreateStatus();
+ 		else if(this.mCurrentY - this.mStartY > 50 && 
+ 				this.status != NORMAL && 
+ 				this.getFirstVisiblePosition() == 0){
+			this.updateHeadViewStatus();
+		} else if(this.mCurrentY - this.mStartY < 50 && 
+				Math.abs(this.mCurrentX - this.mStartX) > 50){
+			int position = this.pointToPosition(this.mCurrentX, this.mCurrentY);
+			if(position == INVALID_POSITION){
+				return false;
+			}
+			AlertItemView mItemView = (AlertItemView) this.getChildAt(position);
+			this.updateItemStatus(mItemView);
 		}
 		return false;
 	}
@@ -527,6 +545,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		// TODO Auto-generated method stub
+		this.mCurrentX = (int) event.getX();
 		this.mCurrentY = (int) event.getY();
 	 	this.mCurrentRawY = (int) event.getRawY();
 		return this.mGesture.onTouchEvent(event);
