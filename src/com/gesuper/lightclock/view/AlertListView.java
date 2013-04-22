@@ -88,7 +88,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 
 	private int mHeight;
 	private int mTouchSlop;
-	private boolean mScroll;
+	private int mScroll;
 	private boolean mLongPress;
 	
 	private int mScrollY;
@@ -117,10 +117,9 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 		this.mTouchSlop = ViewConfiguration.get(this.getContext()).getScaledTouchSlop();
 		this.mHeight = this.getHeight();
 		this.status = CREATE_REFRESH_DONE;
-		this.mScroll = true;
 		this.mDragItemView = null;
 		this.mLongPress = false;
-		this.mScroll = false;
+		this.mScroll = 0;
 		this.initAdapter();
 		this.setOnTouchListener(this);
 		this.setSmoothScrollbarEnabled(true);
@@ -436,7 +435,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 			stopDrag();
 			this.status = CREATE_REFRESH_DONE;
 			this.mLongPress = false;
-		} else if(this.mScroll){
+		} else if(this.mScroll == 1){
 			if(this.status == CREATE_RELEASE_UP){
 				this.status = CREATE_REFRESH_DONE;
 				this.changeHeaderViewByStatus();
@@ -448,8 +447,21 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 					this.mHeadView.setPadding(0, - this.mHeadView.getMHeight(), 0, 0);
 				}
 			}
-			this.mScroll = false;
-		} else {
+			this.mScroll = 0;
+		} else if(this.mScroll == 2){
+			int position = this.pointToPosition(this.mCurrentX, this.mCurrentY);
+			if(position == INVALID_POSITION){
+				return false;
+			}
+			AlertItemView mItemView = (AlertItemView) this.getChildAt(position);
+			
+			if(this.mCurrentX - this.mStartX > 50 ){
+				this.finishItem(mItemView);
+			} else if(this.mStartX - this.mCurrentX > 50 ){
+				this.deleteItem(mItemView);
+			}
+			this.mScroll = 0;
+		}else {
 			int position = this.pointToPosition(0, this.mCurrentY);
 			if(position == INVALID_POSITION){
 				return false;
@@ -466,7 +478,6 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
 			float distanceY) {
 		// TODO Auto-generated method stub
-		this.mScroll = true;
 		if(this.mLongPress){
  			dragView();
  			adjustScrollBounds(this.mCurrentY);
@@ -477,6 +488,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
  		else if(this.mCurrentY - this.mStartY > 50 && 
  				this.status != NORMAL && 
  				this.getFirstVisiblePosition() == 0){
+ 			this.mScroll = 1;
 			this.updateHeadViewStatus();
 		} else if(this.mCurrentY - this.mStartY < 50 && 
 				Math.abs(this.mCurrentX - this.mStartX) > 50){
@@ -485,6 +497,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 				return false;
 			}
 			AlertItemView mItemView = (AlertItemView) this.getChildAt(position);
+			this.mScroll = 2;
 			this.updateItemStatus(mItemView);
 		}
 		return false;
