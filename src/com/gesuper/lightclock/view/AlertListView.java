@@ -508,6 +508,19 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
 		// TODO Auto-generated method stub
+		if(Math.abs(e1.getY() - e2.getY()) < 20){
+			int position = this.pointToPosition((int) e2.getX(), (int) e2.getY());
+			if(position == INVALID_POSITION){
+				return false;
+			}
+			AlertItemView mItemView = (AlertItemView) this.getChildAt(position);
+			
+			if(e1.getX() - e2.getX() > 100 ){
+				this.finishItem(mItemView);
+			} else if(e2.getX() - e1.getX() > 100 ){
+				this.deleteItem(mItemView);
+			}
+		}
 		return false;
 	}
 
