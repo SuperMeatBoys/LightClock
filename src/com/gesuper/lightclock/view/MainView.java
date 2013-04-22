@@ -241,24 +241,6 @@ public class MainView  extends LinearLayout {
 		else this.mDelete.setTextColor(0xFF000000);
 	}
 	
-	public void deleteItem(final AlertItemView itemView){
-		//this.mDelete.setTextColor(0xFFDC143C);
-		new AlertDialog.Builder(this.getContext()).
-				setTitle(R.string.item_menu_delete).
-				setMessage("Do you really want to delete it?").
-				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
-					
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						// TODO Auto-generated method stub
-						itemView.deleteItem();
-						mListView.removeModel(itemView.getModel());
-					}
-				}).setNegativeButton(R.string.dialog_cancel, null).show();
-				
-		
-	}
-	
 	public void saveSequence(){
 		if ((this.mPopView != null) && (this.mPopView.isShowing()))
 	    {

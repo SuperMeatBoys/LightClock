@@ -11,7 +11,9 @@ import com.gesuper.lightclock.model.DBHelperModel;
 import com.gesuper.lightclock.model.MyGesture;
 import com.gesuper.lightclock.model.MyGesture.OnGestureListener;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
@@ -349,6 +351,32 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 		child.measure(childWidthSpec, childHeightSpec);
 	}
 	
+	public void deleteItem(final AlertItemView mItemView){
+		//this.mDelete.setTextColor(0xFFDC143C);
+		new AlertDialog.Builder(this.getContext()).
+				setTitle(R.string.item_menu_delete).
+				setMessage("Do you really want to delete it?").
+				setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						mItemView.deleteItem();
+						mAlertListArray.remove(mItemView.getModel());
+						mAdapter.notifyDataSetChanged();
+					}
+				}).setNegativeButton(R.string.dialog_cancel, null).show();
+				
+		
+	}
+
+	private void finishItem(AlertItemView mItemView) {
+		// TODO Auto-generated method stub
+		mAlertListArray.remove(mItemView.getModel());
+		mAlertListArray.add(mItemView.getModel());
+		mAdapter.notifyDataSetChanged();
+	}
+	
 	public void exchangeAdapterItem(int x, int y){
 		Log.d(TAG, "x:" + x + " y:" + y + "  count:" + this.getCount());
 		AlertItemModel model = this.mAlertListArray.get(x);
@@ -374,8 +402,6 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 
 	public void removeModel(AlertItemModel model) {
 		// TODO Auto-generated method stub
-		this.mAlertListArray.remove(model);
-		this.mAdapter.notifyDataSetChanged();
 	}
 
 	@Override
@@ -397,7 +423,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 		if(this.mLongPress){
 			if(this.mCurrentY > this.getHeight()){
 				this.mMainView.updateDeleteBtnColor(false);
-				this.mMainView.deleteItem(mDragItemView);
+				this.deleteItem(mDragItemView);
 			}
 			stopDrag();
 			this.status = CREATE_REFRESH_DONE;
@@ -477,7 +503,7 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 		startDrag(bitmap, this.mDragPointY + this.mDragItemView.getTop());
 		return false;
 	}
-
+	
 	@Override
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
 			float velocityY) {
