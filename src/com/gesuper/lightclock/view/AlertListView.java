@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.Message;
@@ -192,6 +193,12 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 	private void updateItemStatus(AlertItemView mItemView) {
 		// TODO Auto-generated method stub
 		this.setPadding(this.mCurrentX - this.mStartX, 0, 0, 0);
+		if(this.mCurrentX - this.mStartX > 200){
+			TextView mTextView = (TextView) mItemView.findViewById(R.id.tv_content);
+			mTextView.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG );
+		} else if(this.mStartX - this.mCurrentX > 200){
+			
+		}
 	}
 
 	private void changeHeaderViewByStatus() {
@@ -455,9 +462,9 @@ public class AlertListView extends ListView implements OnTouchListener, OnGestur
 			}
 			AlertItemView mItemView = (AlertItemView) this.getChildAt(position);
 			
-			if(this.mCurrentX - this.mStartX > 50 ){
+			if(this.mCurrentX - this.mStartX > 200 ){
 				this.finishItem(mItemView);
-			} else if(this.mStartX - this.mCurrentX > 50 ){
+			} else if(this.mStartX - this.mCurrentX > 200 ){
 				this.deleteItem(mItemView);
 			}
 			this.mScroll = 0;
